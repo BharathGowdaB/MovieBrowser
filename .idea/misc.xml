@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/drawable/ic_live_tv.xml" value="0.1715" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable-anydpi/ic_search.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/bg_overlay.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/bg_rounded.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/bg_search.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/design_header.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/ic_favorite.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/ic_image.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/ic_live_tv.xml" value="0.1" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/ic_movie.xml" value="0.236" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/ic_share.xml" value="0.1" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/tab_fav_color.xml" value="0.1" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/tab_movie_color.xml" value="0.1" />
+        <entry key="..\:/MovieListApp/app/src/main/res/drawable/tab_tv_color.xml" value="0.1" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/activity_detail.xml" value="0.264" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/activity_main.xml" value="0.2" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/activity_setting.xml" value="0.2" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/fragment_favorite.xml" value="0.25" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/fragment_favorite_film.xml" value="0.25" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/fragment_film.xml" value="0.25" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/list_item_film.xml" value="0.264" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/list_item_film_horizontal.xml" value="0.25" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/list_item_trailer.xml" value="0.25" />
+        <entry key="..\:/MovieListApp/app/src/main/res/layout/toolbar_main.xml" value="0.2" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
