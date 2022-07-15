@@ -3,7 +3,6 @@ package com.project.moviebrowser.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +21,8 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.project.moviebrowser.R;
 import com.project.moviebrowser.activities.DetailMovieActivity;
 import com.project.moviebrowser.adapter.MovieAdapter;
-import com.project.moviebrowser.adapter.MovieHorizontalAdapter;
 import com.project.moviebrowser.model.ModelMovie;
 import com.project.moviebrowser.networking.ApiEndpoint;
-import com.ramotion.cardslider.CardSliderLayoutManager;
-import com.ramotion.cardslider.CardSnapHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,14 +33,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FragmentMovie extends Fragment implements MovieHorizontalAdapter.onSelectData, MovieAdapter.onSelectData {
+public class FragmentMovie extends Fragment implements  MovieAdapter.onSelectData {
 
-    private RecyclerView rvNowPlaying, rvFilmRecommend;
-    private MovieHorizontalAdapter movieHorizontalAdapter;
+    private RecyclerView  rvFilmRecommend;
     private MovieAdapter movieAdapter;
     private ProgressDialog progressDialog;
     private SearchView searchFilm;
-    private List<ModelMovie> moviePlayNow = new ArrayList<>();
     private List<ModelMovie> moviePopular = new ArrayList<>();
 
     public FragmentMovie() {
@@ -76,24 +70,10 @@ public class FragmentMovie extends Fragment implements MovieHorizontalAdapter.on
                 return false;
             }
         });
-
-        int searchPlateId = searchFilm.getContext().getResources()
-                .getIdentifier("android:id/search_plate", null, null);
-        View searchPlate = searchFilm.findViewById(searchPlateId);
-        if (searchPlate != null) {
-            searchPlate.setBackgroundColor(Color.TRANSPARENT);
-        }
-
-        rvNowPlaying = rootView.findViewById(R.id.rvNowPlaying);
-        rvNowPlaying.setHasFixedSize(true);
-        rvNowPlaying.setLayoutManager(new CardSliderLayoutManager(getActivity()));
-        new CardSnapHelper().attachToRecyclerView(rvNowPlaying);
-
         rvFilmRecommend = rootView.findViewById(R.id.rvFilmRecommend);
         rvFilmRecommend.setLayoutManager(new LinearLayoutManager(getActivity()));
         rvFilmRecommend.setHasFixedSize(true);
 
-        getMovieHorizontal();
         getMovie();
 
         return rootView;
@@ -129,49 +109,6 @@ public class FragmentMovie extends Fragment implements MovieHorizontalAdapter.on
                                 dataApi.setPopularity(jsonObject.getString("popularity"));
                                 moviePopular.add(dataApi);
                                 showMovie();
-                            }
-                        } catch (JSONException | ParseException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "Failed to display data!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
-                        progressDialog.dismiss();
-                        Toast.makeText(getActivity(), "No internet connection!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void getMovieHorizontal() {
-        progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.MOVIE_PLAYNOW + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            progressDialog.dismiss();
-                            JSONArray jsonArray = response.getJSONArray("results");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelMovie dataApi = new ModelMovie();
-                                SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-                                String datePost = jsonObject.getString("release_date");
-
-                                dataApi.setId(jsonObject.getInt("id"));
-                                dataApi.setTitle(jsonObject.getString("title"));
-                                dataApi.setVoteAverage(jsonObject.getDouble("vote_average"));
-                                dataApi.setOverview(jsonObject.getString("overview"));
-                                dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
-                                dataApi.setPosterPath(jsonObject.getString("poster_path"));
-                                dataApi.setBackdropPath(jsonObject.getString("backdrop_path"));
-                                dataApi.setPopularity(jsonObject.getString("popularity"));
-                                moviePlayNow.add(dataApi);
-                                showMovieHorizontal();
                             }
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
@@ -229,12 +166,6 @@ public class FragmentMovie extends Fragment implements MovieHorizontalAdapter.on
                         Toast.makeText(getActivity(), "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    private void showMovieHorizontal() {
-        movieHorizontalAdapter = new MovieHorizontalAdapter(getActivity(), moviePlayNow, this);
-        rvNowPlaying.setAdapter(movieHorizontalAdapter);
-        movieHorizontalAdapter.notifyDataSetChanged();
     }
 
     private void showMovie() {

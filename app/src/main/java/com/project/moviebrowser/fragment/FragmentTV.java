@@ -3,7 +3,6 @@ package com.project.moviebrowser.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +21,8 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.project.moviebrowser.R;
 import com.project.moviebrowser.activities.DetailTelevisionActivity;
 import com.project.moviebrowser.adapter.TvAdapter;
-import com.project.moviebrowser.adapter.TvHorizontalAdapter;
 import com.project.moviebrowser.model.ModelTV;
 import com.project.moviebrowser.networking.ApiEndpoint;
-import com.ramotion.cardslider.CardSliderLayoutManager;
-import com.ramotion.cardslider.CardSnapHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,14 +33,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FragmentTV extends Fragment implements TvHorizontalAdapter.onSelectData, TvAdapter.onSelectData{
+public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
 
-    private RecyclerView rvNowPlaying, rvFilmRecommend;
-    private TvHorizontalAdapter tvHorizontalAdapter;
+    private RecyclerView  rvFilmRecommend;
     private TvAdapter tvAdapter;
     private ProgressDialog progressDialog;
     private SearchView searchFilm;
-    private List<ModelTV> tvPlayNow = new ArrayList<>();
     private List<ModelTV> tvPopular = new ArrayList<>();
 
     public FragmentTV() {}
@@ -76,23 +70,10 @@ public class FragmentTV extends Fragment implements TvHorizontalAdapter.onSelect
             }
         });
 
-        int searchPlateId = searchFilm.getContext().getResources()
-                .getIdentifier("android:id/search_plate", null, null);
-        View searchPlate = searchFilm.findViewById(searchPlateId);
-        if (searchPlate != null) {
-            searchPlate.setBackgroundColor(Color.TRANSPARENT);
-        }
-
-        rvNowPlaying = rootView.findViewById(R.id.rvNowPlaying);
-        rvNowPlaying.setHasFixedSize(true);
-        rvNowPlaying.setLayoutManager(new CardSliderLayoutManager(getActivity()));
-        new CardSnapHelper().attachToRecyclerView(rvNowPlaying);
-
         rvFilmRecommend = rootView.findViewById(R.id.rvFilmRecommend);
         rvFilmRecommend.setLayoutManager(new LinearLayoutManager(getActivity()));
         rvFilmRecommend.setHasFixedSize(true);
 
-        getTvHorizontal();
         getFilmTV();
 
         return rootView;
@@ -128,49 +109,6 @@ public class FragmentTV extends Fragment implements TvHorizontalAdapter.onSelect
                                 dataApi.setPopularity(jsonObject.getString("popularity"));
                                 tvPopular.add(dataApi);
                                 showFilmTV();
-                            }
-                        } catch (JSONException | ParseException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "Failed to display data!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
-                        progressDialog.dismiss();
-                        Toast.makeText(getActivity(), "No internet connection!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void getTvHorizontal() {
-        progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_PLAYNOW + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            progressDialog.dismiss();
-                            JSONArray jsonArray = response.getJSONArray("results");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelTV dataApi = new ModelTV();
-                                SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-                                String datePost = jsonObject.getString("first_air_date");
-
-                                dataApi.setId(jsonObject.getInt("id"));
-                                dataApi.setName(jsonObject.getString("name"));
-                                dataApi.setVoteAverage(jsonObject.getDouble("vote_average"));
-                                dataApi.setOverview(jsonObject.getString("overview"));
-                                dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
-                                dataApi.setPosterPath(jsonObject.getString("poster_path"));
-                                dataApi.setBackdropPath(jsonObject.getString("backdrop_path"));
-                                dataApi.setPopularity(jsonObject.getString("popularity"));
-                                tvPlayNow.add(dataApi);
-                                showMovieHorizontal();
                             }
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
@@ -228,12 +166,6 @@ public class FragmentTV extends Fragment implements TvHorizontalAdapter.onSelect
                         Toast.makeText(getActivity(), "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    private void showMovieHorizontal() {
-        tvHorizontalAdapter = new TvHorizontalAdapter(getActivity(), tvPlayNow, this);
-        rvNowPlaying.setAdapter(tvHorizontalAdapter);
-        tvHorizontalAdapter.notifyDataSetChanged();
     }
 
     private void showFilmTV() {
