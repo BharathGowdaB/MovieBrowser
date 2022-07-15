@@ -31,17 +31,7 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name="com.project.moviebrowser.notification.NotificationReleaseReceiver"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="ExportedReceiver" />
 
-        <receiver
-            android:name="com.project.moviebrowser.notification.NotificationDailyReceiver"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="ExportedReceiver" />
     </application>
 
 </manifest>
