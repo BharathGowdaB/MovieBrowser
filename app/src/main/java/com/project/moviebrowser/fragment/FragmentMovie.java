@@ -3,7 +3,6 @@ package com.project.moviebrowser.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FragmentMovie extends Fragment implements MovieAdapter.onSelectData {
+public class FragmentMovie extends Fragment implements  MovieAdapter.onSelectData {
 
     private RecyclerView  rvFilmRecommend;
     private MovieAdapter movieAdapter;
@@ -71,7 +70,6 @@ public class FragmentMovie extends Fragment implements MovieAdapter.onSelectData
                 return false;
             }
         });
-
         rvFilmRecommend = rootView.findViewById(R.id.rvFilmRecommend);
         rvFilmRecommend.setLayoutManager(new LinearLayoutManager(getActivity()));
         rvFilmRecommend.setHasFixedSize(true);
@@ -125,7 +123,6 @@ public class FragmentMovie extends Fragment implements MovieAdapter.onSelectData
                     }
                 });
     }
-
 
     private void getMovie() {
         progressDialog.show();

@@ -3,7 +3,6 @@ package com.project.moviebrowser.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +35,7 @@ import java.util.List;
 
 public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
 
-    private RecyclerView rvFilmRecommend;
+    private RecyclerView  rvFilmRecommend;
     private TvAdapter tvAdapter;
     private ProgressDialog progressDialog;
     private SearchView searchFilm;
@@ -70,7 +69,6 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
                 return false;
             }
         });
-
 
         rvFilmRecommend = rootView.findViewById(R.id.rvFilmRecommend);
         rvFilmRecommend.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -169,7 +167,6 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
                     }
                 });
     }
-
 
     private void showFilmTV() {
         tvAdapter = new TvAdapter(getActivity(), tvPopular, this);

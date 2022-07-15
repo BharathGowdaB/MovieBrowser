@@ -1,7 +1,6 @@
 package com.project.moviebrowser.activities;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -23,14 +22,14 @@ public class SettingActivity extends AppCompatActivity {
         switchReminder = findViewById(R.id.swDailyReminder);
         switchRelease = findViewById(R.id.swRealeseToday);
 
-
+        // Switch Reminder OnClick
         switchReminder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (switchReminder.isChecked()) {
-                    Toast.makeText(getApplicationContext(), "Daily reminders activated", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(getApplicationContext(), "Daily reminders activated", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Daily reminders not activated", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(getApplicationContext(), "Daily reminders not activated", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -42,7 +41,7 @@ public class SettingActivity extends AppCompatActivity {
                 if (switchRelease.isChecked()) {
                    Toast.makeText(getApplicationContext(), "Release reminder activated", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getApplicationContext(), "Release reminder not activated", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(getApplicationContext(), "Release reminder not activated", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -50,12 +49,4 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            this.finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }

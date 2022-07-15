@@ -4,8 +4,14 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/drawable/ic_live_tv.xml" value="0.1715" />
-        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/activity_detail.xml" value="0.10989583333333333" />
-        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/fragment_film.xml" value="0.1574074074074074" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/activity_detail.xml" value="0.23425925925925925" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/activity_setting.xml" value="0.23425925925925925" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/fragment_favorite.xml" value="0.23425925925925925" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/fragment_film.xml" value="0.25" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/list_item_film.xml" value="0.25" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/list_item_film_horizontal.xml" value="0.25" />
+        <entry key="..\:/GitHub/MovieBrowser/app/src/main/res/layout/toolbar_main.xml" value="0.23425925925925925" />
         <entry key="..\:/MovieListApp/app/src/main/res/drawable-anydpi/ic_search.xml" value="0.236" />
         <entry key="..\:/MovieListApp/app/src/main/res/drawable/bg_overlay.xml" value="0.236" />
         <entry key="..\:/MovieListApp/app/src/main/res/drawable/bg_rounded.xml" value="0.236" />
