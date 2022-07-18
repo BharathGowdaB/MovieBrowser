@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -53,6 +54,8 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
         progressDialog.setCancelable(false);
         progressDialog.setCanceledOnTouchOutside(false);
 
+        TextView textView = rootView.findViewById(R.id.listTitle);
+        textView.setText("TV Shows Recommendations");
         searchFilm = rootView.findViewById(R.id.searchFilm);
         searchFilm.setQueryHint(getString(R.string.search_film));
         searchFilm.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

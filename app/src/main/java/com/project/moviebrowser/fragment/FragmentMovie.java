@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -54,6 +55,8 @@ public class FragmentMovie extends Fragment implements  MovieAdapter.onSelectDat
         progressDialog.setCancelable(false);
         progressDialog.setCanceledOnTouchOutside(false);
 
+        TextView textView = rootView.findViewById(R.id.listTitle);
+        textView.setText("Movies Recommendations");
         searchFilm = rootView.findViewById(R.id.searchFilm);
         searchFilm.setQueryHint(getString(R.string.search_film));
         searchFilm.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

@@ -10,7 +10,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import com.gauravk.bubblenavigation.BubbleNavigationLinearView;
 import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
@@ -18,7 +17,6 @@ import com.project.moviebrowser.R;
 import com.project.moviebrowser.fragment.FragmentFavorite;
 import com.project.moviebrowser.fragment.FragmentMovie;
 import com.project.moviebrowser.fragment.FragmentTV;
-import com.project.moviebrowser.utils.BottomBarBehavior;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,9 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         BubbleNavigationLinearView navigationBar = findViewById(R.id.navigationBar);
 
-        CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) navigationBar.getLayoutParams();
-        layoutParams.setBehavior(new BottomBarBehavior());
-
         getSupportFragmentManager().beginTransaction().replace(R.id.frameLayout, new FragmentMovie()).commit();
 
         navigationBar.setNavigationChangeListener(new BubbleNavigationChangeListener() {
@@ -80,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
         Window window = activity.getWindow();
         WindowManager.LayoutParams winParams = window.getAttributes();
         if (on) {
-            winParams.flags |= bits;
+           winParams.flags |= bits;
         } else {
-            winParams.flags &= ~bits;
+           winParams.flags &= ~bits;
         }
         window.setAttributes(winParams);
     }
