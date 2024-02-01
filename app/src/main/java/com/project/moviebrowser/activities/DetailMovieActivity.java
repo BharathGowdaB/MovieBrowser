@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
+import android.widget.Button;
+import android.widget.MediaController;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,9 +17,11 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,12 +47,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.project.moviebrowser.services.StreamService;
 
 public class DetailMovieActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     TextView tvTitle, tvName, tvRating, tvRelease, tvPopularity, tvOverview;
     ImageView imgCover, imgPhoto;
+    Button streamerButton;
     RecyclerView rvTrailer;
     MaterialFavoriteButton imgFavorite;
     FloatingActionButton fabShare;
@@ -60,6 +67,7 @@ public class DetailMovieActivity extends AppCompatActivity {
     List<ModelTrailer> modelTrailer = new ArrayList<>();
     TrailerAdapter trailerAdapter;
     RealmHelper helper;
+    StreamService streamService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +106,7 @@ public class DetailMovieActivity extends AppCompatActivity {
         tvOverview = findViewById(R.id.tvOverview);
         rvTrailer = findViewById(R.id.rvTrailer);
         fabShare = findViewById(R.id.fabShare);
+        streamerButton = findViewById(R.id.streamerButton);
 
         helper = new RealmHelper(this);
 
@@ -113,6 +122,19 @@ public class DetailMovieActivity extends AppCompatActivity {
             Cover = modelMovie.getBackdropPath();
             Thumbnail = modelMovie.getPosterPath();
             movieURL = ApiEndpoint.URLFILM + "" + Id;
+            streamService = new StreamService(false, Id);
+
+            if(streamService.hasStreamableService()){
+                findViewById(R.id.streamer).setVisibility(View.VISIBLE);
+                streamerButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Uri uri = streamService.getStreamUri();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
+                    }
+                });
+            }
 
             tvTitle.setText(NameFilm);
             tvName.setText(NameFilm);
@@ -142,10 +164,10 @@ public class DetailMovieActivity extends AppCompatActivity {
             rvTrailer.setLayoutManager(new LinearLayoutManager(this));
 
             getTrailer();
-
         }
-        if(helper.isFavoriteMovie(Id))
-            imgFavorite.setFavorite(true);
+
+
+        if(helper.isFavoriteMovie(Id)) imgFavorite.setFavorite(true);
         imgFavorite.setOnFavoriteChangeListener(
                 new MaterialFavoriteButton.OnFavoriteChangeListener() {
                     @Override
@@ -186,6 +208,7 @@ public class DetailMovieActivity extends AppCompatActivity {
         });
 
     }
+
 
     private void getTrailer() {
         progressDialog.show();

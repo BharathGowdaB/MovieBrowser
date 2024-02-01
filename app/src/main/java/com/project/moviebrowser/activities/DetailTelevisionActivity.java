@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -244,4 +245,9 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void openURL(View view) {
+        Uri uri = Uri.parse("https://vidsrc.to/embed/tv/" + this.Id + "/1/1");
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
+    }
 }

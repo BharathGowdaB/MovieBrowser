@@ -15,4 +15,20 @@ public class ApiEndpoint {
     public static String MOVIE_VIDEO = "movie/{id}/videos?";
     public static String TV_VIDEO = "tv/{id}/videos?";
 
+    public static String STREAMER_BASEURL = "https://vidsrc.to/embed/";
+    public static String getStreamMovieAPI(int id) {
+        return STREAMER_BASEURL + "movie/" + id;
+    }
+    public static String getStreamTvAPI(int id){
+        return getStreamTvAPI(id, 1, 1);
+    }
+
+    public static String getStreamTvAPI(int id, int season){
+        return getStreamTvAPI(id, season, 1);
+
+    }
+
+    public static String getStreamTvAPI(int id, int season, int episode){
+        return STREAMER_BASEURL + "tv/" + id + "/" + season + "/" + episode;
+    }
 }
