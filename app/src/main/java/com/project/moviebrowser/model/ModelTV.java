@@ -1,7 +1,10 @@
 package com.project.moviebrowser.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+import io.realm.RealmList;
 import io.realm.RealmObject;
 
 public class ModelTV extends RealmObject implements Serializable {
@@ -14,6 +17,8 @@ public class ModelTV extends RealmObject implements Serializable {
     private String PosterPath;
     private String BackdropPath;
     private String Popularity;
+
+    private RealmList<TVShowSeason> Seasons;
 
     public ModelTV() {
     }
@@ -80,5 +85,17 @@ public class ModelTV extends RealmObject implements Serializable {
 
     public void setPopularity(String popularity) {
         Popularity = popularity;
+    }
+
+    public TVShowSeason[] getSeasons() {
+        TVShowSeason[] tvSeasons = new TVShowSeason[Seasons.size()];
+        return Seasons.toArray(tvSeasons);
+
+    }
+
+    public void setSeasons(TVShowSeason[] seasons) {
+        RealmList<TVShowSeason> tvSeasons = new RealmList<>();
+        tvSeasons.addAll(Arrays.asList(seasons));
+        Seasons = tvSeasons;
     }
 }

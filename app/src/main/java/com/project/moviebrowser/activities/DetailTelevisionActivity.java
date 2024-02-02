@@ -34,6 +34,7 @@ import com.project.moviebrowser.R;
 import com.project.moviebrowser.adapter.TrailerAdapter;
 import com.project.moviebrowser.model.ModelTV;
 import com.project.moviebrowser.model.ModelTrailer;
+import com.project.moviebrowser.model.TVShowSeason;
 import com.project.moviebrowser.networking.ApiEndpoint;
 import com.project.moviebrowser.realm.RealmHelper;
 
@@ -41,6 +42,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +59,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
     String NameFilm, ReleaseDate, Popularity, Overview, Cover, Thumbnail, movieURL;
     int Id;
     double Rating;
+    TVShowSeason[] Seasons;
     ModelTV modelTV;
     ProgressDialog progressDialog;
     List<ModelTrailer> modelTrailer = new ArrayList<>();
@@ -97,7 +101,6 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         tvOverview = findViewById(R.id.tvOverview);
         rvTrailer = findViewById(R.id.rvTrailer);
         fabShare = findViewById(R.id.fabShare);
-
         helper = new RealmHelper(this);
 
         modelTV = (ModelTV) getIntent().getSerializableExtra("detailTV");
@@ -111,6 +114,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
             Overview = modelTV.getOverview();
             Cover = modelTV.getBackdropPath();
             Thumbnail = modelTV.getPosterPath();
+
             movieURL = ApiEndpoint.URLFILM + "" + Id;
 
             tvTitle.setText(NameFilm);
@@ -140,6 +144,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
             rvTrailer.setHasFixedSize(true);
             rvTrailer.setLayoutManager(new LinearLayoutManager(this));
 
+            getTVDetails();
             getTrailer();
 
         }
@@ -158,7 +163,8 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                             Thumbnail = modelTV.getPosterPath();
                             Cover = modelTV.getBackdropPath();
                             Popularity = modelTV.getPopularity();
-                            helper.addFavoriteTV(Id, NameFilm, Rating, Overview, ReleaseDate, Thumbnail, Cover, Popularity);
+                            Seasons = modelTV.getSeasons();
+                            helper.addFavoriteTV(Id, NameFilm, Rating, Overview, ReleaseDate, Thumbnail, Cover, Popularity, Seasons);
                             Snackbar.make(buttonView, modelTV.getName() + " Added to Favorite",
                                     Snackbar.LENGTH_SHORT).show();
                         } else {
@@ -186,6 +192,50 @@ public class DetailTelevisionActivity extends AppCompatActivity {
 
     }
 
+    private void getTVDetails(){
+        progressDialog.show();
+        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_DETAILS + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
+                .addPathParameter("id", String.valueOf(Id))
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            progressDialog.dismiss();
+                            JSONArray seasonArray = response.getJSONArray("seasons");
+                            TVShowSeason[] tvSeasonArray = new TVShowSeason[seasonArray.length()];
+
+                            SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+
+                            for(int j = 0 ; j < seasonArray.length(); j++){
+                                JSONObject season = seasonArray.getJSONObject(j);
+                                tvSeasonArray[j] = new TVShowSeason();
+                                tvSeasonArray[j].setId(season.getInt("id"));
+                                tvSeasonArray[j].setSeasonNumber(season.getInt("season_number"));
+                                tvSeasonArray[j].setEpisodeCount(season.getInt("episode_count"));
+                                tvSeasonArray[j].setName(season.getString("name"));
+                                tvSeasonArray[j].setOverview(season.getString("overview"));
+                                tvSeasonArray[j].setPosterPath(season.getString("poster_path"));
+
+                                String datePost = season.getString("air_date");
+                                tvSeasonArray[j].setAirDate(formatter.format(dateFormat.parse(datePost)));
+                            }
+                            modelTV.setSeasons(tvSeasonArray);
+                        } catch (JSONException | ParseException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), "Failed to display data!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getApplicationContext(), "No internet connection!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
     private void getTrailer() {
         progressDialog.show();
         AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_VIDEO + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)

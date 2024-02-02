@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.project.moviebrowser.model.ModelMovie;
 import com.project.moviebrowser.model.ModelTV;
+import com.project.moviebrowser.model.TVShowSeason;
 
 import java.util.ArrayList;
 
@@ -88,7 +89,7 @@ public class RealmHelper {
     }
 
     public void addFavoriteTV(int Id, String Title, double VoteAverage, String Overview,
-                                 String ReleaseDate, String PosterPath, String BackdropPath, String Popularity) {
+                              String ReleaseDate, String PosterPath, String BackdropPath, String Popularity, TVShowSeason[] seasons) {
         if(isFavoriteTV(Id)){
             return;
         }
@@ -101,6 +102,7 @@ public class RealmHelper {
         tv.setPosterPath(PosterPath);
         tv.setBackdropPath(BackdropPath);
         tv.setPopularity(Popularity);
+        tv.setSeasons(seasons);
 
         realm.beginTransaction();
         realm.copyToRealm(tv);

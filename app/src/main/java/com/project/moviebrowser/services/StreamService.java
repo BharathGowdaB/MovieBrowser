@@ -36,6 +36,10 @@ public class StreamService {
         this.isTVShow = true;
     }
 
+    public Uri getStreamUri(){
+        return Uri.parse(this.streamAPIEndpoint);
+    }
+
     public boolean hasStreamableService() {
         final boolean[] result = new boolean[1];
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -76,8 +80,6 @@ public class StreamService {
     }
 
 
-    public Uri getStreamUri(){
-        return Uri.parse(this.streamAPIEndpoint);
-    }
+
 
 }

@@ -23,6 +23,7 @@ import com.project.moviebrowser.R;
 import com.project.moviebrowser.activities.DetailTelevisionActivity;
 import com.project.moviebrowser.adapter.TvAdapter;
 import com.project.moviebrowser.model.ModelTV;
+import com.project.moviebrowser.model.TVShowSeason;
 import com.project.moviebrowser.networking.ApiEndpoint;
 
 import org.json.JSONArray;
