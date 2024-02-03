@@ -151,7 +151,7 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
                                 dataApi.setName(jsonObject.getString("name"));
                                 dataApi.setVoteAverage(jsonObject.getDouble("vote_average"));
                                 dataApi.setOverview(jsonObject.getString("overview"));
-                                dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
+                                if(datePost.length() > 0 && dateFormat.parse(datePost) != null) dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
                                 dataApi.setPosterPath(jsonObject.getString("poster_path"));
                                 dataApi.setBackdropPath(jsonObject.getString("backdrop_path"));
                                 dataApi.setPopularity(jsonObject.getString("popularity"));

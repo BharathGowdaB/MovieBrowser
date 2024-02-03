@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,8 +12,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,17 +30,21 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.project.moviebrowser.R;
+import com.project.moviebrowser.adapter.EpisodeAdapter;
 import com.project.moviebrowser.adapter.TrailerAdapter;
 import com.project.moviebrowser.model.ModelTV;
 import com.project.moviebrowser.model.ModelTrailer;
+import com.project.moviebrowser.model.TVShowEpisode;
 import com.project.moviebrowser.model.TVShowSeason;
 import com.project.moviebrowser.networking.ApiEndpoint;
 import com.project.moviebrowser.realm.RealmHelper;
+import com.project.moviebrowser.services.StreamService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,24 +54,24 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DetailTelevisionActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     TextView tvTitle, tvName, tvRating, tvRelease, tvPopularity, tvOverview;
     ImageView imgCover, imgPhoto;
-    RecyclerView rvTrailer;
+    RecyclerView rvEpisodeList;
     MaterialFavoriteButton imgFavorite;
     FloatingActionButton fabShare;
     RatingBar ratingBar;
+    Spinner seasonSpinner;
     String NameFilm, ReleaseDate, Popularity, Overview, Cover, Thumbnail, movieURL;
     int Id;
     double Rating;
     TVShowSeason[] Seasons;
     ModelTV modelTV;
     ProgressDialog progressDialog;
-    List<ModelTrailer> modelTrailer = new ArrayList<>();
-    TrailerAdapter trailerAdapter;
     RealmHelper helper;
 
     @Override
@@ -99,8 +107,14 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         tvRelease = findViewById(R.id.tvRelease);
         tvPopularity = findViewById(R.id.tvPopularity);
         tvOverview = findViewById(R.id.tvOverview);
-        rvTrailer = findViewById(R.id.rvTrailer);
         fabShare = findViewById(R.id.fabShare);
+        seasonSpinner = findViewById(R.id.seasonList);
+        findViewById(R.id.streamerButton).setVisibility(View.GONE);
+        ((TextView) findViewById(R.id.videoListTitle)).setText("Episodes");
+
+        rvEpisodeList = findViewById(R.id.rvTrailer);
+        rvEpisodeList.setLayoutManager(new LinearLayoutManager(this));
+
         helper = new RealmHelper(this);
 
         modelTV = (ModelTV) getIntent().getSerializableExtra("detailTV");
@@ -136,17 +150,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imgCover);
 
-            Glide.with(this)
-                    .load(ApiEndpoint.URLIMAGE + Thumbnail)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(imgPhoto);
-
-            rvTrailer.setHasFixedSize(true);
-            rvTrailer.setLayoutManager(new LinearLayoutManager(this));
-
             getTVDetails();
-            getTrailer();
-
         }
         if(helper.isFavoriteTV(Id))
             imgFavorite.setFavorite(true);
@@ -209,6 +213,8 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                             SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
                             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
 
+                            List<String> seasonNames = new ArrayList<>();
+
                             for(int j = 0 ; j < seasonArray.length(); j++){
                                 JSONObject season = seasonArray.getJSONObject(j);
                                 tvSeasonArray[j] = new TVShowSeason();
@@ -216,13 +222,33 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                                 tvSeasonArray[j].setSeasonNumber(season.getInt("season_number"));
                                 tvSeasonArray[j].setEpisodeCount(season.getInt("episode_count"));
                                 tvSeasonArray[j].setName(season.getString("name"));
+                                seasonNames.add(season.getString("name"));
                                 tvSeasonArray[j].setOverview(season.getString("overview"));
                                 tvSeasonArray[j].setPosterPath(season.getString("poster_path"));
 
                                 String datePost = season.getString("air_date");
-                                tvSeasonArray[j].setAirDate(formatter.format(dateFormat.parse(datePost)));
+                                if(!datePost.equals("null") && dateFormat.parse(datePost) != null)
+                                    tvSeasonArray[j].setAirDate(formatter.format(dateFormat.parse(datePost)));
                             }
                             modelTV.setSeasons(tvSeasonArray);
+
+                            ArrayAdapter<String> adapter = new ArrayAdapter(getApplicationContext(), R.layout.season_list, seasonNames );
+                            adapter.setDropDownViewResource(R.layout.season_list);
+                            seasonSpinner.setAdapter(adapter);
+
+                            seasonSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                    changeSeason(seasonSpinner.getSelectedItem().toString());
+                                }
+
+                                @Override
+                                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                                }
+                            });
+
+                            getEpisodes(tvSeasonArray[0].getSeasonNumber());
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), "Failed to display data!", Toast.LENGTH_SHORT).show();
@@ -236,10 +262,33 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                     }
                 });
     }
-    private void getTrailer() {
+
+    private void changeSeason(String seasonName){
         progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_VIDEO + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
+        for(int k = 0 ; k < modelTV.getSeasons().length ; k++){
+            if(modelTV.getSeasons()[k].getName().equals(seasonName)){
+                TVShowSeason selectedSeason = modelTV.getSeasons()[k];
+
+                if(selectedSeason.getOverview().length() > 0) tvOverview.setText(selectedSeason.getOverview());
+                if(selectedSeason.getAirDate().length() > 0) tvRelease.setText(selectedSeason.getAirDate());
+                if(selectedSeason.getPosterPath().length() > 0 && !Objects.equals(selectedSeason.getPosterPath(), "null")){
+                    Glide.with(this)
+                            .load(ApiEndpoint.URLIMAGE + selectedSeason.getPosterPath())
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(imgPhoto);
+                }
+
+                getEpisodes(selectedSeason.getSeasonNumber());
+                break;
+            }
+        }
+        progressDialog.dismiss();
+    }
+    private void getEpisodes(int seasonNumber) {
+        progressDialog.show();
+        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_SEASON_DETAILS + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
                 .addPathParameter("id", String.valueOf(Id))
+                .addPathParameter("number", String.valueOf(seasonNumber))
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
@@ -247,15 +296,18 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             progressDialog.dismiss();
-                            JSONArray jsonArray = response.getJSONArray("results");
+                            List<TVShowEpisode> episodeList = new ArrayList<>();
+
+                            JSONArray jsonArray = response.getJSONArray("episodes");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelTrailer dataApi = new ModelTrailer();
-                                dataApi.setKey(jsonObject.getString("key"));
-                                dataApi.setType(jsonObject.getString("type"));
-                                modelTrailer.add(dataApi);
-                                showTrailer();
+                                StreamService streamService = new StreamService(Id, seasonNumber, jsonObject.getInt("episode_number"));
+                                episodeList.add(new TVShowEpisode(jsonObject.getInt("episode_number"), jsonObject.getString("name"), streamService.getStreamUri()));
+
                             }
+
+                            rvEpisodeList.setAdapter(new EpisodeAdapter(episodeList));
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(DetailTelevisionActivity.this,"Failed to display data!", Toast.LENGTH_SHORT).show();
@@ -268,11 +320,6 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                         Toast.makeText(DetailTelevisionActivity.this, "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    private void showTrailer() {
-        trailerAdapter = new TrailerAdapter(DetailTelevisionActivity.this, modelTrailer);
-        rvTrailer.setAdapter(trailerAdapter);
     }
 
     public static void setWindowFlag(Activity activity, final int bits, boolean on) {

@@ -1,5 +1,6 @@
 package com.project.moviebrowser.services;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -41,6 +42,10 @@ public class StreamService {
     }
 
     public boolean hasStreamableService() {
+        return StreamService.hasStreamableService(this.streamAPIEndpoint);
+    }
+
+    public static boolean hasStreamableService(String uri){
         final boolean[] result = new boolean[1];
         final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -49,7 +54,7 @@ public class StreamService {
             public void run() {
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
-                        .url(streamAPIEndpoint)
+                        .url(uri)
                         .build();
 
                 try (Response response = client.newCall(request).execute()) {
@@ -78,8 +83,5 @@ public class StreamService {
 
         return result[0];
     }
-
-
-
 
 }

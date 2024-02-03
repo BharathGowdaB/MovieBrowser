@@ -107,6 +107,7 @@ public class DetailMovieActivity extends AppCompatActivity {
         rvTrailer = findViewById(R.id.rvTrailer);
         fabShare = findViewById(R.id.fabShare);
         streamerButton = findViewById(R.id.streamerButton);
+        findViewById(R.id.seasonList).setVisibility(View.GONE);
 
         helper = new RealmHelper(this);
 
@@ -125,13 +126,20 @@ public class DetailMovieActivity extends AppCompatActivity {
             streamService = new StreamService(false, Id);
 
             if(streamService.hasStreamableService()){
-                findViewById(R.id.streamer).setVisibility(View.VISIBLE);
+                streamerButton.setVisibility(View.VISIBLE);
                 streamerButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Uri uri = streamService.getStreamUri();
                         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(intent);
+
+                        String title = "Select a browser";
+                        Intent chooser = Intent.createChooser(intent, title);
+
+                        // Verify the original intent will resolve to at least one activity
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(chooser);
+                        }
                     }
                 });
             }

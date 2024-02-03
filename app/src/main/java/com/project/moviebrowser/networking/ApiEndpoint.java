@@ -18,6 +18,7 @@ public class ApiEndpoint {
     public static String MOVIE_DETAIL = "movie/{id}?";
     public static String TV_DETAILS = "tv/{id}?";
 
+    public static String TV_SEASON_DETAILS = "tv/{id}/season/{number}?";
 
     public static String STREAMER_BASEURL = "https://vidsrc.to/embed/";
     public static String getStreamMovieAPI(int id) {

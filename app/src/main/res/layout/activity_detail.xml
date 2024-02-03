@@ -109,39 +109,72 @@
 
                             </LinearLayout>
 
-                            <RelativeLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-
-                                <TextView
-                                    android:id="@+id/tvVote"
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="8dp"
+                                >
+                                <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_alignParentStart="true"
-                                    android:layout_centerInParent="true"
-                                    android:text="Rating :"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="14sp" />
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+                                    <RelativeLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content">
 
-                                <TextView
-                                    android:id="@+id/tvRating"
+                                        <TextView
+                                            android:id="@+id/tvVote"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_alignParentStart="true"
+                                            android:layout_centerInParent="true"
+                                            android:text="Rating :"
+                                            android:textColor="@android:color/white"
+                                            android:textSize="14sp" />
+
+                                        <TextView
+                                            android:id="@+id/tvRating"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"
+                                            android:layout_marginStart="5dp"
+                                            android:layout_toEndOf="@id/tvVote"
+                                            android:singleLine="true"
+                                            android:textColor="@android:color/white"
+                                            android:textSize="14sp" />
+
+                                    </RelativeLayout>
+
+                                    <RatingBar
+                                        android:id="@+id/ratingBar"
+                                        style="@style/Widget.AppCompat.RatingBar.Small"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:progressTint="@color/colorRating"
+                                        android:layout_marginTop="4dp"/>
+                                </LinearLayout>
+                                <LinearLayout
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_centerInParent="true"
-                                    android:layout_marginStart="5dp"
-                                    android:layout_toEndOf="@id/tvVote"
-                                    android:singleLine="true"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="14sp" />
+                                    android:layout_height="match_parent"
+                                    >
 
-                            </RelativeLayout>
+                                    <Button
+                                        android:id="@+id/streamerButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="32dp"
+                                        android:paddingHorizontal="1dp"
+                                        android:paddingVertical="4dp"
+                                        android:text="@string/stream"
+                                        android:textSize="13sp"
+                                        android:textColor="@android:color/white"
+                                        android:background="@drawable/btn_stream"
+                                        android:layout_gravity="center_vertical"
+                                        />
+                                </LinearLayout>
+                            </LinearLayout>
 
-                            <RatingBar
-                                android:id="@+id/ratingBar"
-                                style="@style/Widget.AppCompat.RatingBar.Small"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:progressTint="@color/colorRating" />
+
 
                         </LinearLayout>
 
@@ -171,37 +204,7 @@
                 </androidx.cardview.widget.CardView>
 
             </FrameLayout>
-            <androidx.cardview.widget.CardView
-                android:id="@+id/streamer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:layout_marginVertical="5dp"
-                android:layout_marginTop="10dp"
-                app:cardBackgroundColor="@color/colorPrimary"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="3dp"
-                android:visibility="gone">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="5dp"
-                    android:padding="10dp">
-
-                    <Button
-                        android:id="@+id/streamerButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="20dp"
-                        android:background="@drawable/transition_background_drawable"
-                        android:padding="0dp"
-                        android:text="@string/stream"
-                        android:textColor="@android:color/white" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -217,29 +220,59 @@
                     android:orientation="vertical"
                     android:padding="10dp">
 
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        >
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            >
 
-                        <TextView
-                            android:id="@+id/tvRD"
+                            <TextView
+                                android:id="@+id/tvRD"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Release Date :"
+                                android:textColor="@android:color/white"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvRelease"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/tvRD"
+                                android:text="Alumni"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Release Date :"
-                            android:textColor="@android:color/white"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            >
 
-                        <TextView
-                            android:id="@+id/tvRelease"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/tvRD"
-                            android:text="Alumni"
-                            android:textColor="@color/colorAccent"
-                            android:textSize="12sp" />
+                            <Spinner
+                                android:layout_width="wrap_content"
+                                android:minWidth="80dp"
+                                android:id="@+id/seasonList"
+                                android:layout_height="wrap_content"
+                                android:text="@string/stream"
+                                android:textSize="13sp"
+                                android:textColor="@android:color/white"
+                                android:background="@drawable/season_spinner"
+                                android:layout_gravity="center_vertical"
+                                android:popupBackground="@color/colorPrimaryDark"
+                                >
 
-                    </RelativeLayout>
+                            </Spinner>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
 
                     <RelativeLayout
                         android:layout_width="wrap_content"
@@ -295,10 +328,11 @@
             </androidx.cardview.widget.CardView>
 
             <TextView
+                android:id="@+id/videoListTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="10dp"
                 android:text="Trailer"
                 android:textColor="@android:color/white"
@@ -309,7 +343,10 @@
                 android:id="@+id/rvTrailer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:fastScrollEnabled="true"
+                android:layout_marginBottom="20dp"
+                android:layout_marginTop="20dp"/>
 
         </LinearLayout>
 
