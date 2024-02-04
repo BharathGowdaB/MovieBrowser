@@ -1,14 +1,30 @@
 package com.project.moviebrowser.services;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
+
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.OkHttpResponseAndParsedRequestListener;
+import com.project.moviebrowser.R;
+import com.project.moviebrowser.activities.DetailMovieActivity;
 import com.project.moviebrowser.networking.ApiEndpoint;
 
 import java.io.IOException;
@@ -19,6 +35,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class StreamService {
+    private static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     public boolean isTVShow = false;
     private final String streamAPIEndpoint;
 
@@ -43,6 +60,35 @@ public class StreamService {
 
     public boolean hasStreamableService() {
         return StreamService.hasStreamableService(this.streamAPIEndpoint);
+    }
+
+    public String generateStreamHTML(){
+        return "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Document</title>\n" +
+                "    <style>\n" +
+                "        .iframe-class {\n" +
+                "            border: 0;\n" +
+                "            overflow: auto;\n" +
+                "            height: 100vh;\n" +
+                "            width: 100vw;\n" +
+                "            position: absolute;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body style=\"margin: 0px; background-color: black\">\n" +
+                "    \n" +
+                "    <script>\n" +
+                "        var df = \"sdfiiousiog\"\n" +
+                "    </script>\n" +
+                "    <iframe src=\"" + streamAPIEndpoint + "\" allow=\"fullscreen\" style=\"position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;\">\n" +
+                "        Your browser doesn't support iframes\n" +
+                "    </iframe>\n" +
+                "</body>\n" +
+                "</html>";
     }
 
     public static boolean hasStreamableService(String uri){
@@ -83,5 +129,52 @@ public class StreamService {
 
         return result[0];
     }
+
+    public static WebChromeClient createWebClient(AppCompatActivity activity){
+        return new WebChromeClient() {
+            private View mCustomView;
+            private WebChromeClient.CustomViewCallback mCustomViewCallback;
+            protected FrameLayout mFullscreenContainer;
+            private int mOriginalOrientation;
+            private int mOriginalSystemUiVisibility;
+
+            @Override
+            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+                if (mCustomView != null) {
+                    onHideCustomView();
+                    return;
+                }
+
+                mCustomView = view;
+                mOriginalSystemUiVisibility = activity.getWindow().getDecorView().getSystemUiVisibility();
+                mOriginalOrientation = activity.getRequestedOrientation();
+
+                mCustomViewCallback = callback;
+                mFullscreenContainer = new FullscreenHolder(activity.getBaseContext());
+                mFullscreenContainer.addView(mCustomView, COVER_SCREEN_PARAMS);
+                activity.getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LOW_PROFILE | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_LAYOUT_STABLE | SYSTEM_UI_FLAG_IMMERSIVE_STICKY | SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                activity.setContentView(mFullscreenContainer);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (mCustomView == null) {
+                    return;
+                }
+
+                activity.getWindow().getDecorView().setSystemUiVisibility(mOriginalSystemUiVisibility);
+                activity.setRequestedOrientation(mOriginalOrientation);
+                mCustomView.setVisibility(View.GONE);
+                mFullscreenContainer.removeView(mCustomView);
+                mCustomView = null;
+                mFullscreenContainer = null;
+                mCustomViewCallback.onCustomViewHidden();
+                activity.setContentView(R.layout.activity_detail); // Your base layout here
+            }
+        };
+    }
+
+
 
 }

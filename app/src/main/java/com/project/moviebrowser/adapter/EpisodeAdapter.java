@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,9 +23,11 @@ import java.util.List;
 
 public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHolder> {
     private List<TVShowEpisode> episodes;
+    private WebView webView;
 
-    public EpisodeAdapter(List<TVShowEpisode> episodes) {
+    public EpisodeAdapter(List<TVShowEpisode> episodes, WebView webView) {
         this.episodes = episodes;
+        this.webView = webView;
     }
 
     @Override
@@ -36,14 +39,15 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         TVShowEpisode episode = episodes.get(position);
-        holder.name.setText(episode.getName());
         holder.number.setText(String.valueOf(episode.getNumber()));
 
-        holder.name.setOnClickListener(new View.OnClickListener() {
+        holder.number.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(StreamService.hasStreamableService(episode.getStreamUri().toString())){
-                    Intent intent = new Intent(Intent.ACTION_VIEW, episode.getStreamUri());
+                webView.loadData(episode.getStreamer().generateStreamHTML(), "text/html", "UTF-8");
+                /*
+                if(StreamService.hasStreamableService(episode.getStreamer().getStreamUri().toString())){
+                    Intent intent = new Intent(Intent.ACTION_VIEW, episode.getStreamer().getStreamUri());
 
                     String title = "Select a browser";
                     Intent chooser = Intent.createChooser(intent, title);
@@ -55,6 +59,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
                 } else {
                     Toast.makeText(getApplicationContext(),"Stream Not Found", Toast.LENGTH_SHORT).show();
                 }
+                */
 
             }
         });
@@ -66,12 +71,10 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView name;
         public TextView number;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.episode_name);
             number = itemView.findViewById(R.id.episode_number);
         }
     }

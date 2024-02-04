@@ -19,7 +19,9 @@
         tools:targetApi="m"
         tools:ignore="AllowBackup">
         <activity android:name="com.project.moviebrowser.activities.SettingActivity" />
-        <activity android:name="com.project.moviebrowser.activities.DetailMovieActivity" />
+        <activity android:name="com.project.moviebrowser.activities.DetailMovieActivity" android:configChanges="keyboardHidden|orientation|screenSize"/>
+
+
         <activity android:name="com.project.moviebrowser.activities.DetailTelevisionActivity" />
         <activity
             android:name="com.project.moviebrowser.activities.MainActivity"

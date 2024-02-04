@@ -40,7 +40,10 @@
                             android:id="@+id/tvTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="5dp"
+                            android:layout_marginBottom="6dp"
+                            android:ellipsize="marquee"
+                            android:marqueeRepeatLimit="marquee_forever"
+                            android:singleLine="true"
                             android:textColor="@android:color/white"
                             android:textSize="18sp" />
 
@@ -48,6 +51,7 @@
                             android:id="@+id/tvDesc"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
                             android:ellipsize="end"
                             android:maxLines="2"
                             android:textAlignment="viewStart"

@@ -1,11 +1,26 @@
 package com.project.moviebrowser.activities;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.net.Uri;
+import android.view.MotionEvent;
+import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.MediaController;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -47,10 +63,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.project.moviebrowser.services.FullscreenHolder;
 import com.project.moviebrowser.services.StreamService;
 
-public class DetailMovieActivity extends AppCompatActivity {
 
+public class DetailMovieActivity extends AppCompatActivity {
     Toolbar toolbar;
     TextView tvTitle, tvName, tvRating, tvRelease, tvPopularity, tvOverview;
     ImageView imgCover, imgPhoto;
@@ -68,18 +86,19 @@ public class DetailMovieActivity extends AppCompatActivity {
     TrailerAdapter trailerAdapter;
     RealmHelper helper;
     StreamService streamService;
+    WebView webStreamer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+        getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LAYOUT_STABLE |
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
         if (Build.VERSION.SDK_INT >= 21) {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setStatusBarColor(getResources().getColor(R.color.black));
         }
 
         toolbar = findViewById(R.id.toolbar);
@@ -107,9 +126,13 @@ public class DetailMovieActivity extends AppCompatActivity {
         rvTrailer = findViewById(R.id.rvTrailer);
         fabShare = findViewById(R.id.fabShare);
         streamerButton = findViewById(R.id.streamerButton);
-        findViewById(R.id.seasonList).setVisibility(View.GONE);
 
         helper = new RealmHelper(this);
+
+        webStreamer = findViewById(R.id.webStreamer);
+        WebSettings webSettings = webStreamer.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webStreamer.setWebChromeClient(StreamService.createWebClient(this));
 
         modelMovie = (ModelMovie) getIntent().getSerializableExtra("detailMovie");
         if (modelMovie != null) {
@@ -123,8 +146,12 @@ public class DetailMovieActivity extends AppCompatActivity {
             Cover = modelMovie.getBackdropPath();
             Thumbnail = modelMovie.getPosterPath();
             movieURL = ApiEndpoint.URLFILM + "" + Id;
-            streamService = new StreamService(false, Id);
 
+            streamService = new StreamService(false, Id);
+            webStreamer.loadData( streamService.generateStreamHTML(), "text/html", "UTF-8");
+
+            /*
+            // Stream Externally via a link
             if(streamService.hasStreamableService()){
                 streamerButton.setVisibility(View.VISIBLE);
                 streamerButton.setOnClickListener(new View.OnClickListener() {
@@ -143,6 +170,7 @@ public class DetailMovieActivity extends AppCompatActivity {
                     }
                 });
             }
+            */
 
             tvTitle.setText(NameFilm);
             tvName.setText(NameFilm);
@@ -176,8 +204,7 @@ public class DetailMovieActivity extends AppCompatActivity {
 
 
         if(helper.isFavoriteMovie(Id)) imgFavorite.setFavorite(true);
-        imgFavorite.setOnFavoriteChangeListener(
-                new MaterialFavoriteButton.OnFavoriteChangeListener() {
+        imgFavorite.setOnFavoriteChangeListener( new MaterialFavoriteButton.OnFavoriteChangeListener() {
                     @Override
                     public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
                         if (favorite) {
@@ -216,6 +243,9 @@ public class DetailMovieActivity extends AppCompatActivity {
         });
 
     }
+
+
+
 
 
     private void getTrailer() {

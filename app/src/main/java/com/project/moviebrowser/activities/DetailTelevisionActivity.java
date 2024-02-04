@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -32,7 +34,13 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.google.android.flexbox.AlignItems;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.flexbox.JustifyContent;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.project.moviebrowser.R;
@@ -74,6 +82,8 @@ public class DetailTelevisionActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     RealmHelper helper;
 
+    WebView webStreamer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +92,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         if (Build.VERSION.SDK_INT >= 21) {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setStatusBarColor(getResources().getColor(R.color.black));
         }
 
         toolbar = findViewById(R.id.toolbar);
@@ -109,13 +119,21 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         tvOverview = findViewById(R.id.tvOverview);
         fabShare = findViewById(R.id.fabShare);
         seasonSpinner = findViewById(R.id.seasonList);
-        findViewById(R.id.streamerButton).setVisibility(View.GONE);
+        seasonSpinner.setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.videoListTitle)).setText("Episodes");
 
         rvEpisodeList = findViewById(R.id.rvTrailer);
-        rvEpisodeList.setLayoutManager(new LinearLayoutManager(this));
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
+        layoutManager.setFlexWrap(FlexWrap.WRAP);
+        layoutManager.setAlignItems(AlignItems.STRETCH);
+        rvEpisodeList.setLayoutManager(layoutManager);
 
         helper = new RealmHelper(this);
+
+        webStreamer = findViewById(R.id.webStreamer);
+        WebSettings webSettings = webStreamer.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webStreamer.setWebChromeClient(StreamService.createWebClient(this));
 
         modelTV = (ModelTV) getIntent().getSerializableExtra("detailTV");
         if (modelTV != null) {
@@ -128,7 +146,6 @@ public class DetailTelevisionActivity extends AppCompatActivity {
             Overview = modelTV.getOverview();
             Cover = modelTV.getBackdropPath();
             Thumbnail = modelTV.getPosterPath();
-
             movieURL = ApiEndpoint.URLFILM + "" + Id;
 
             tvTitle.setText(NameFilm);
@@ -248,7 +265,7 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                                 }
                             });
 
-                            getEpisodes(tvSeasonArray[0].getSeasonNumber());
+                            getEpisodes(tvSeasonArray[0].getSeasonNumber(), tvSeasonArray[0].getEpisodeCount());
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), "Failed to display data!", Toast.LENGTH_SHORT).show();
@@ -274,18 +291,39 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                 if(selectedSeason.getPosterPath().length() > 0 && !Objects.equals(selectedSeason.getPosterPath(), "null")){
                     Glide.with(this)
                             .load(ApiEndpoint.URLIMAGE + selectedSeason.getPosterPath())
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .apply(new RequestOptions()
+                                    .placeholder(R.drawable.ic_image)
+                                    .transform(new RoundedCorners(16)))
                             .into(imgPhoto);
                 }
 
-                getEpisodes(selectedSeason.getSeasonNumber());
+                getEpisodes(selectedSeason.getSeasonNumber(), selectedSeason.getEpisodeCount());
                 break;
             }
         }
         progressDialog.dismiss();
     }
-    private void getEpisodes(int seasonNumber) {
+
+    private void loadStreamer(StreamService streamService){
+        webStreamer.loadData(streamService.generateStreamHTML(), "text/html", "UTF-8");
+    }
+
+    private void getEpisodes(int seasonNumber, int episodeCount){
         progressDialog.show();
+        List<TVShowEpisode> episodes = new ArrayList<>();
+        for (int i = 1; i <= episodeCount; i++) {
+            episodes.add(new TVShowEpisode(i, String.valueOf(i), new StreamService(Id, seasonNumber, i)));
+        }
+
+        // Set the adapter on the ListView
+        rvEpisodeList.setAdapter(new EpisodeAdapter(episodes, webStreamer));
+        loadStreamer(episodes.get(0).getStreamer());
+        progressDialog.hide();
+    }
+
+    /*
+    private void getEpisodes(int seasonNumber) {
+
         AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_SEASON_DETAILS + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
                 .addPathParameter("id", String.valueOf(Id))
                 .addPathParameter("number", String.valueOf(seasonNumber))
@@ -303,7 +341,6 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 StreamService streamService = new StreamService(Id, seasonNumber, jsonObject.getInt("episode_number"));
                                 episodeList.add(new TVShowEpisode(jsonObject.getInt("episode_number"), jsonObject.getString("name"), streamService.getStreamUri()));
-
                             }
 
                             rvEpisodeList.setAdapter(new EpisodeAdapter(episodeList));
@@ -320,7 +357,9 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                         Toast.makeText(DetailTelevisionActivity.this, "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
+    */
 
     public static void setWindowFlag(Activity activity, final int bits, boolean on) {
         Window window = activity.getWindow();
