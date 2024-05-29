@@ -7,18 +7,26 @@ import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
 import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
+import static com.project.moviebrowser.services.StreamService.COVER_SCREEN_PARAMS;
+
 import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
+import android.util.Rational;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.MediaController;
@@ -48,10 +56,18 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.google.android.flexbox.AlignContent;
+import com.google.android.flexbox.AlignItems;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.flexbox.JustifyContent;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.project.moviebrowser.R;
+import com.project.moviebrowser.adapter.MovieAdapter;
+import com.project.moviebrowser.adapter.RecommendationAdapter;
 import com.project.moviebrowser.adapter.TrailerAdapter;
+import com.project.moviebrowser.configuration.Configuration;
 import com.project.moviebrowser.model.ModelMovie;
 import com.project.moviebrowser.model.ModelTrailer;
 import com.project.moviebrowser.networking.ApiEndpoint;
@@ -61,32 +77,41 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.project.moviebrowser.services.FullscreenHolder;
 import com.project.moviebrowser.services.StreamService;
+import com.project.moviebrowser.view.TriSelector;
+
+import io.realm.RealmObject;
 
 
-public class DetailMovieActivity extends AppCompatActivity {
+public class DetailMovieActivity extends AppCompatActivity implements RecommendationAdapter.openRecommendation {
     Toolbar toolbar;
-    TextView tvTitle, tvName, tvRating, tvRelease, tvPopularity, tvOverview;
+    TextView title, name, rating, releaseDate, popularity, overview;
     ImageView imgCover, imgPhoto;
-    Button streamerButton;
-    RecyclerView rvTrailer;
     MaterialFavoriteButton imgFavorite;
     FloatingActionButton fabShare;
     RatingBar ratingBar;
-    String NameFilm, ReleaseDate, Popularity, Overview, Cover, Thumbnail, movieURL;
+    String shareURL;
     int Id;
-    double Rating;
     ModelMovie modelMovie;
     ProgressDialog progressDialog;
+    RealmHelper helper;
+    WebView webStreamer;
+    StreamService streamService;
+    RecyclerView rvRecd;
+    private RecommendationAdapter recdAdapter;
+    List<RealmObject> recdMovies = new ArrayList<>();
+    RecyclerView rvTrailer;
     List<ModelTrailer> modelTrailer = new ArrayList<>();
     TrailerAdapter trailerAdapter;
-    RealmHelper helper;
-    StreamService streamService;
-    WebView webStreamer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,10 +121,8 @@ public class DetailMovieActivity extends AppCompatActivity {
         getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LAYOUT_STABLE |
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
-        if (Build.VERSION.SDK_INT >= 21) {
-            setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.black));
-        }
+        setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.black));
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
@@ -117,89 +140,75 @@ public class DetailMovieActivity extends AppCompatActivity {
         imgCover = findViewById(R.id.imgCover);
         imgPhoto = findViewById(R.id.imgPhoto);
         imgFavorite = findViewById(R.id.imgFavorite);
-        tvTitle = findViewById(R.id.tvTitle);
-        tvName = findViewById(R.id.tvName);
-        tvRating = findViewById(R.id.tvRating);
-        tvRelease = findViewById(R.id.tvRelease);
-        tvPopularity = findViewById(R.id.tvPopularity);
-        tvOverview = findViewById(R.id.tvOverview);
-        rvTrailer = findViewById(R.id.rvTrailer);
+        title = findViewById(R.id.title);
+        name = findViewById(R.id.name);
+        rating = findViewById(R.id.tvRating);
+        releaseDate = findViewById(R.id.releaseDate);
+        popularity = findViewById(R.id.popularity);
+        overview = findViewById(R.id.overview);
         fabShare = findViewById(R.id.fabShare);
-        streamerButton = findViewById(R.id.streamerButton);
 
         helper = new RealmHelper(this);
 
         webStreamer = findViewById(R.id.webStreamer);
-        WebSettings webSettings = webStreamer.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        webStreamer.getSettings().setJavaScriptEnabled(true);
         webStreamer.setWebChromeClient(StreamService.createWebClient(this));
+        webStreamer.setWebViewClient(StreamService.createWebViewClient());
 
-        modelMovie = (ModelMovie) getIntent().getSerializableExtra("detailMovie");
+        rvTrailer = findViewById(R.id.rvTrailer);
+        rvRecd = findViewById(R.id.recommendations);
+
+
+        if(getIntent().hasExtra("detailMovie")){
+            modelMovie = (ModelMovie) getIntent().getSerializableExtra("detailMovie");
+        }
+
         if (modelMovie != null) {
-
             Id = modelMovie.getId();
-            NameFilm = modelMovie.getTitle();
-            Rating = modelMovie.getVoteAverage();
-            ReleaseDate = modelMovie.getReleaseDate();
-            Popularity = modelMovie.getPopularity();
-            Overview = modelMovie.getOverview();
-            Cover = modelMovie.getBackdropPath();
-            Thumbnail = modelMovie.getPosterPath();
-            movieURL = ApiEndpoint.URLFILM + "" + Id;
 
-            streamService = new StreamService(false, Id);
-            webStreamer.loadData( streamService.generateStreamHTML(), "text/html", "UTF-8");
+            title.setText(modelMovie.getTitle());
+            name.setText(modelMovie.getTitle());
+            String ratingText = String.valueOf(modelMovie.getVoteAverage()).substring(0,4) + "/10";
+            rating.setText(ratingText);
+            releaseDate.setText(modelMovie.getReleaseDate());
+            popularity.setText(modelMovie.getPopularity());
+            overview.setText(modelMovie.getOverview());
+            title.setSelected(true);
+            name.setSelected(true);
 
-            /*
-            // Stream Externally via a link
-            if(streamService.hasStreamableService()){
-                streamerButton.setVisibility(View.VISIBLE);
-                streamerButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Uri uri = streamService.getStreamUri();
-                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-
-                        String title = "Select a browser";
-                        Intent chooser = Intent.createChooser(intent, title);
-
-                        // Verify the original intent will resolve to at least one activity
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            startActivity(chooser);
-                        }
-                    }
-                });
-            }
-            */
-
-            tvTitle.setText(NameFilm);
-            tvName.setText(NameFilm);
-            tvRating.setText(Rating + "/10");
-            tvRelease.setText(ReleaseDate);
-            tvPopularity.setText(Popularity);
-            tvOverview.setText(Overview);
-            tvTitle.setSelected(true);
-            tvName.setSelected(true);
-
-            float newValue = (float)Rating;
             ratingBar.setNumStars(5);
             ratingBar.setStepSize((float) 0.5);
-            ratingBar.setRating(newValue / 2);
+            ratingBar.setRating(modelMovie.getRating());
+
+            shareURL = ApiEndpoint.URL_MOVIE + Id;
 
             Glide.with(this)
-                    .load(ApiEndpoint.URLIMAGE + Cover)
+                    .load(modelMovie.getBackdropPath())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imgCover);
 
             Glide.with(this)
-                    .load(ApiEndpoint.URLIMAGE + Thumbnail)
+                    .load(modelMovie.getPosterPath())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imgPhoto);
 
-            rvTrailer.setHasFixedSize(true);
-            rvTrailer.setLayoutManager(new LinearLayoutManager(this));
+            streamService = new StreamService(Id, true);
+            webStreamer.loadData(streamService.generateStreamHTML(), "text/html", "UTF-8");
 
-            getTrailer();
+            rvTrailer.setHasFixedSize(true);
+            FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
+            layoutManager.setFlexWrap(FlexWrap.WRAP);
+            layoutManager.setJustifyContent(JustifyContent.CENTER);
+            layoutManager.setAlignItems(AlignItems.CENTER);
+            rvTrailer.setLayoutManager(layoutManager);
+
+            modelTrailer = modelMovie.getVideos();
+            showTrailer();
+
+            rvRecd.setHasFixedSize(true);
+            rvRecd.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+
+            getRecommendations();
         }
 
 
@@ -209,14 +218,7 @@ public class DetailMovieActivity extends AppCompatActivity {
                     public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
                         if (favorite) {
                             Id = modelMovie.getId();
-                            NameFilm = modelMovie.getTitle();
-                            Rating = modelMovie.getVoteAverage();
-                            Overview = modelMovie.getOverview();
-                            ReleaseDate = modelMovie.getReleaseDate();
-                            Thumbnail = modelMovie.getPosterPath();
-                            Cover = modelMovie.getBackdropPath();
-                            Popularity = modelMovie.getPopularity();
-                            helper.addFavoriteMovie(Id, NameFilm, Rating, Overview, ReleaseDate, Thumbnail, Cover, Popularity);
+                            helper.addFavoriteMovie(modelMovie);
                             Snackbar.make(buttonView, modelMovie.getTitle() + " Added to Favorite",
                                     Snackbar.LENGTH_SHORT).show();
                         } else {
@@ -237,41 +239,49 @@ public class DetailMovieActivity extends AppCompatActivity {
                 String subject = modelMovie.getTitle();
                 String description = modelMovie.getOverview();
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, subject + "\n\n" + description + "\n\n" + movieURL);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, subject + "\n\n" + description + "\n\n" + shareURL);
                 startActivity(Intent.createChooser(shareIntent, "Share with :"));
             }
         });
-
     }
 
-
-
-
-
-    private void getTrailer() {
+    private void getRecommendations() {
         progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.MOVIE_VIDEO + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .addPathParameter("id", String.valueOf(Id))
+        String url = ApiEndpoint.MOVIEBROWSER_API + "movie/id/" + Id;
+
+        AndroidNetworking.get(url)
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            progressDialog.dismiss();
-                            JSONArray jsonArray = response.getJSONArray("results");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelTrailer dataApi = new ModelTrailer();
-                                dataApi.setKey(jsonObject.getString("key"));
-                                dataApi.setType(jsonObject.getString("type"));
-                                modelTrailer.add(dataApi);
-                                showTrailer();
+                            JSONArray collections = response.getJSONObject("collection").getJSONArray("parts");
+                            JSONArray recommendations = response.getJSONArray("recommendations");
+                            Set<Integer> set = new HashSet<>();
+                            recdMovies = new ArrayList<>();
+                            for (int i = 0; i < collections.length(); i++) {
+                                JSONObject jsonObject = collections.getJSONObject(i);
+                                ModelMovie dataApi = ModelMovie.createModel(jsonObject);
+                                if(!set.contains(dataApi.getId()) && dataApi.getId() != Id){
+                                    set.add(dataApi.getId());
+                                    recdMovies.add(dataApi);
+                                }
                             }
-                        } catch (JSONException e) {
+                            for (int i = 0; i < recommendations.length(); i++) {
+                                JSONObject jsonObject = recommendations.getJSONObject(i);
+                                ModelMovie dataApi = ModelMovie.createModel(jsonObject);
+                                if(!set.contains(dataApi.getId()) && dataApi.getId() != Id){
+                                    set.add(dataApi.getId());
+                                    recdMovies.add(dataApi);
+                                }
+                            }
+                            showRecommendations();
+                        } catch (JSONException | ParseException e) {
                             e.printStackTrace();
-                            Toast.makeText(DetailMovieActivity.this,"Failed to display data!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(DetailMovieActivity.this, "Failed to display data!", Toast.LENGTH_SHORT).show();
                         }
+                        progressDialog.dismiss();
                     }
 
                     @Override
@@ -280,6 +290,12 @@ public class DetailMovieActivity extends AppCompatActivity {
                         Toast.makeText(DetailMovieActivity.this, "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void showRecommendations() {
+        recdAdapter = new RecommendationAdapter(this, recdMovies, this, true);
+        rvRecd.setAdapter(recdAdapter);
+        recdAdapter.notifyDataSetChanged();
     }
 
     private void showTrailer() {
@@ -305,6 +321,13 @@ public class DetailMovieActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void openRecommended(RealmObject model) {
+        Intent intent = new Intent(this, DetailMovieActivity.class);
+        intent.putExtra("detailMovie", (ModelMovie) model);
+        startActivity(intent);
     }
 
 }

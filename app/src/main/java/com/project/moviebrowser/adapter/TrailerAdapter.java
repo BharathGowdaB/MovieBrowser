@@ -35,15 +35,18 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     public void onBindViewHolder(TrailerAdapter.ViewHolder holder, int position) {
         final ModelTrailer data = items.get(position);
 
-        holder.btnTrailer.setText(data.getType());
-        holder.btnTrailer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("https://www.youtube.com/watch?v=" + data.getKey()));
-                mContext.startActivity(intent);
-            }
-        });
+        holder.btnTrailer.setText(data.getName());
+
+        if(data.getUrl() != null){
+            holder.btnTrailer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(data.getUrl()));
+                    mContext.startActivity(intent);
+                }
+            });
+        }
     }
 
     @Override

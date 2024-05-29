@@ -45,7 +45,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.project.moviebrowser.R;
 import com.project.moviebrowser.adapter.EpisodeAdapter;
+import com.project.moviebrowser.adapter.RecommendationAdapter;
 import com.project.moviebrowser.adapter.TrailerAdapter;
+import com.project.moviebrowser.model.ModelMovie;
 import com.project.moviebrowser.model.ModelTV;
 import com.project.moviebrowser.model.ModelTrailer;
 import com.project.moviebrowser.model.TVShowEpisode;
@@ -61,28 +63,34 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-public class DetailTelevisionActivity extends AppCompatActivity {
+import io.realm.RealmObject;
+
+public class DetailTelevisionActivity extends AppCompatActivity implements RecommendationAdapter.openRecommendation {
 
     Toolbar toolbar;
     TextView tvTitle, tvName, tvRating, tvRelease, tvPopularity, tvOverview;
     ImageView imgCover, imgPhoto;
-    RecyclerView rvEpisodeList;
     MaterialFavoriteButton imgFavorite;
     FloatingActionButton fabShare;
     RatingBar ratingBar;
-    Spinner seasonSpinner;
-    String NameFilm, ReleaseDate, Popularity, Overview, Cover, Thumbnail, movieURL;
+    String shareURL;
     int Id;
-    double Rating;
-    TVShowSeason[] Seasons;
     ModelTV modelTV;
     ProgressDialog progressDialog;
     RealmHelper helper;
-
     WebView webStreamer;
+    StreamService streamService;
+    RecyclerView rvRecd;
+    private RecommendationAdapter recdAdapter;
+    List<RealmObject> recdTvshows = new ArrayList<>();
+    RecyclerView rvEpisode;
+    Spinner seasonSpinner;
+    TVShowSeason[] Seasons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,10 +98,9 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        if (Build.VERSION.SDK_INT >= 21) {
-            setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.black));
-        }
+
+        setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.black));
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("");
@@ -111,86 +118,103 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         imgCover = findViewById(R.id.imgCover);
         imgPhoto = findViewById(R.id.imgPhoto);
         imgFavorite = findViewById(R.id.imgFavorite);
-        tvTitle = findViewById(R.id.tvTitle);
-        tvName = findViewById(R.id.tvName);
+        tvTitle = findViewById(R.id.title);
+        tvName = findViewById(R.id.name);
         tvRating = findViewById(R.id.tvRating);
-        tvRelease = findViewById(R.id.tvRelease);
-        tvPopularity = findViewById(R.id.tvPopularity);
-        tvOverview = findViewById(R.id.tvOverview);
+        tvRelease = findViewById(R.id.releaseDate);
+        tvPopularity = findViewById(R.id.popularity);
+        tvOverview = findViewById(R.id.overview);
         fabShare = findViewById(R.id.fabShare);
-        seasonSpinner = findViewById(R.id.seasonList);
-        seasonSpinner.setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.videoListTitle)).setText("Episodes");
-
-        rvEpisodeList = findViewById(R.id.rvTrailer);
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
-        layoutManager.setFlexWrap(FlexWrap.WRAP);
-        layoutManager.setAlignItems(AlignItems.STRETCH);
-        rvEpisodeList.setLayoutManager(layoutManager);
 
         helper = new RealmHelper(this);
 
         webStreamer = findViewById(R.id.webStreamer);
-        WebSettings webSettings = webStreamer.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        webStreamer.getSettings().setJavaScriptEnabled(true);
         webStreamer.setWebChromeClient(StreamService.createWebClient(this));
+        webStreamer.setWebViewClient(StreamService.createWebViewClient());
 
-        modelTV = (ModelTV) getIntent().getSerializableExtra("detailTV");
+        seasonSpinner = findViewById(R.id.seasonList);
+        seasonSpinner.setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.videoListTitle)).setText("Episodes");
+
+        rvEpisode = findViewById(R.id.rvTrailer);
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
+        layoutManager.setFlexWrap(FlexWrap.WRAP);
+        layoutManager.setAlignItems(AlignItems.STRETCH);
+        rvEpisode.setLayoutManager(layoutManager);
+        rvRecd = findViewById(R.id.recommendations);
+
+
+        if (getIntent().hasExtra("detailTV")) {
+            modelTV = (ModelTV) getIntent().getSerializableExtra("detailTV");
+        }
+
         if (modelTV != null) {
-
             Id = modelTV.getId();
-            NameFilm = modelTV.getName();
-            Rating = modelTV.getVoteAverage();
-            ReleaseDate = modelTV.getReleaseDate();
-            Popularity = modelTV.getPopularity();
-            Overview = modelTV.getOverview();
-            Cover = modelTV.getBackdropPath();
-            Thumbnail = modelTV.getPosterPath();
-            movieURL = ApiEndpoint.URLFILM + "" + Id;
 
-            tvTitle.setText(NameFilm);
-            tvName.setText(NameFilm);
-            tvRating.setText(Rating + "/10");
-            tvRelease.setText(ReleaseDate);
-            tvPopularity.setText(Popularity);
-            tvOverview.setText(Overview);
+            tvTitle.setText(modelTV.getTitle());
+            tvName.setText(modelTV.getTitle());
+            String ratingText = String.valueOf(modelTV.getVoteAverage()).substring(0,4) + "/10";
+            tvRating.setText(ratingText);
+            tvRelease.setText(modelTV.getFirstAirDate());
+            tvPopularity.setText(modelTV.getPopularity());
+            tvOverview.setText(modelTV.getOverview());
             tvTitle.setSelected(true);
             tvName.setSelected(true);
 
-            float newValue = (float)Rating;
             ratingBar.setNumStars(5);
             ratingBar.setStepSize((float) 0.5);
-            ratingBar.setRating(newValue / 2);
+            ratingBar.setRating(modelTV.getRating());
 
             Glide.with(this)
-                    .load(ApiEndpoint.URLIMAGE + Cover)
+                    .load(modelTV.getBackdropPath())
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imgCover);
 
-            getTVDetails();
+            Glide.with(this)
+                    .load(modelTV.getPosterPath())
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(imgPhoto);
+
+            streamService = new StreamService(Id, false);
+            loadStreamer(streamService);
+
+            List<String> seasonNames = new ArrayList<>();
+            for(TVShowSeason season: modelTV.getSeasons()) seasonNames.add(season.getName());
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(), R.layout.season_list, seasonNames );
+            adapter.setDropDownViewResource(R.layout.season_list);
+            seasonSpinner.setAdapter(adapter);
+            seasonSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    changeSeason(seasonSpinner.getSelectedItem().toString());
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
+            });
+
+            rvRecd.setHasFixedSize(true);
+            rvRecd.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+
+            getRecommendations();
         }
-        if(helper.isFavoriteTV(Id))
-            imgFavorite.setFavorite(true);
+
+        if (helper.isFavoriteTV(Id)) imgFavorite.setFavorite(true);
         imgFavorite.setOnFavoriteChangeListener(
                 new MaterialFavoriteButton.OnFavoriteChangeListener() {
                     @Override
                     public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
                         if (favorite) {
                             Id = modelTV.getId();
-                            NameFilm = modelTV.getName();
-                            Rating = modelTV.getVoteAverage();
-                            Overview = modelTV.getOverview();
-                            ReleaseDate = modelTV.getReleaseDate();
-                            Thumbnail = modelTV.getPosterPath();
-                            Cover = modelTV.getBackdropPath();
-                            Popularity = modelTV.getPopularity();
-                            Seasons = modelTV.getSeasons();
-                            helper.addFavoriteTV(Id, NameFilm, Rating, Overview, ReleaseDate, Thumbnail, Cover, Popularity, Seasons);
-                            Snackbar.make(buttonView, modelTV.getName() + " Added to Favorite",
+                            helper.addFavoriteTV(modelTV);
+                            Snackbar.make(buttonView, modelTV.getTitle() + " Added to Favorite",
                                     Snackbar.LENGTH_SHORT).show();
                         } else {
                             helper.deleteFavoriteTV(modelTV.getId());
-                            Snackbar.make(buttonView, modelTV.getName() + " Removed from Favorite",
+                            Snackbar.make(buttonView, modelTV.getTitle() + " Removed from Favorite",
                                     Snackbar.LENGTH_SHORT).show();
                         }
 
@@ -203,152 +227,45 @@ public class DetailTelevisionActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
-                String subject = modelTV.getName();
+                String subject = modelTV.getTitle();
                 String description = modelTV.getOverview();
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, subject + "\n\n" + description + "\n\n" + movieURL);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, subject + "\n\n" + description + "\n\n" + shareURL);
                 startActivity(Intent.createChooser(shareIntent, "Share with :"));
             }
         });
 
+
     }
 
-    private void getTVDetails(){
+    private void getRecommendations() {
         progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_DETAILS + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .addPathParameter("id", String.valueOf(Id))
+        String url = ApiEndpoint.MOVIEBROWSER_API + "tvshow/id/" + Id;
+
+        AndroidNetworking.get(url)
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            progressDialog.dismiss();
-                            JSONArray seasonArray = response.getJSONArray("seasons");
-                            TVShowSeason[] tvSeasonArray = new TVShowSeason[seasonArray.length()];
-
-                            SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-
-                            List<String> seasonNames = new ArrayList<>();
-
-                            for(int j = 0 ; j < seasonArray.length(); j++){
-                                JSONObject season = seasonArray.getJSONObject(j);
-                                tvSeasonArray[j] = new TVShowSeason();
-                                tvSeasonArray[j].setId(season.getInt("id"));
-                                tvSeasonArray[j].setSeasonNumber(season.getInt("season_number"));
-                                tvSeasonArray[j].setEpisodeCount(season.getInt("episode_count"));
-                                tvSeasonArray[j].setName(season.getString("name"));
-                                seasonNames.add(season.getString("name"));
-                                tvSeasonArray[j].setOverview(season.getString("overview"));
-                                tvSeasonArray[j].setPosterPath(season.getString("poster_path"));
-
-                                String datePost = season.getString("air_date");
-                                if(!datePost.equals("null") && dateFormat.parse(datePost) != null)
-                                    tvSeasonArray[j].setAirDate(formatter.format(dateFormat.parse(datePost)));
+                            JSONArray recommendations = response.getJSONArray("recommendations");
+                            HashSet<Integer> set = new HashSet<>();
+                            recdTvshows = new ArrayList<>();
+                            for (int i = 0; i < recommendations.length(); i++) {
+                                JSONObject jsonObject = recommendations.getJSONObject(i);
+                                ModelTV dataApi = ModelTV.createModel(jsonObject);
+                                if(!set.contains(dataApi.getId()) && dataApi.getId() != Id){
+                                    set.add(dataApi.getId());
+                                    recdTvshows.add(dataApi);
+                                }
                             }
-                            modelTV.setSeasons(tvSeasonArray);
-
-                            ArrayAdapter<String> adapter = new ArrayAdapter(getApplicationContext(), R.layout.season_list, seasonNames );
-                            adapter.setDropDownViewResource(R.layout.season_list);
-                            seasonSpinner.setAdapter(adapter);
-
-                            seasonSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                @Override
-                                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                                    changeSeason(seasonSpinner.getSelectedItem().toString());
-                                }
-
-                                @Override
-                                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                                }
-                            });
-
-                            getEpisodes(tvSeasonArray[0].getSeasonNumber(), tvSeasonArray[0].getEpisodeCount());
+                            showRecommendations();
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Failed to display data!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(DetailTelevisionActivity.this, "Failed to display data!", Toast.LENGTH_SHORT).show();
                         }
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
                         progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "No internet connection!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void changeSeason(String seasonName){
-        progressDialog.show();
-        for(int k = 0 ; k < modelTV.getSeasons().length ; k++){
-            if(modelTV.getSeasons()[k].getName().equals(seasonName)){
-                TVShowSeason selectedSeason = modelTV.getSeasons()[k];
-
-                if(selectedSeason.getOverview().length() > 0) tvOverview.setText(selectedSeason.getOverview());
-                if(selectedSeason.getAirDate().length() > 0) tvRelease.setText(selectedSeason.getAirDate());
-                if(selectedSeason.getPosterPath().length() > 0 && !Objects.equals(selectedSeason.getPosterPath(), "null")){
-                    Glide.with(this)
-                            .load(ApiEndpoint.URLIMAGE + selectedSeason.getPosterPath())
-                            .apply(new RequestOptions()
-                                    .placeholder(R.drawable.ic_image)
-                                    .transform(new RoundedCorners(16)))
-                            .into(imgPhoto);
-                }
-
-                getEpisodes(selectedSeason.getSeasonNumber(), selectedSeason.getEpisodeCount());
-                break;
-            }
-        }
-        progressDialog.dismiss();
-    }
-
-    private void loadStreamer(StreamService streamService){
-        webStreamer.loadData(streamService.generateStreamHTML(), "text/html", "UTF-8");
-    }
-
-    private void getEpisodes(int seasonNumber, int episodeCount){
-        progressDialog.show();
-        List<TVShowEpisode> episodes = new ArrayList<>();
-        for (int i = 1; i <= episodeCount; i++) {
-            episodes.add(new TVShowEpisode(i, String.valueOf(i), new StreamService(Id, seasonNumber, i)));
-        }
-
-        // Set the adapter on the ListView
-        rvEpisodeList.setAdapter(new EpisodeAdapter(episodes, webStreamer));
-        loadStreamer(episodes.get(0).getStreamer());
-        progressDialog.hide();
-    }
-
-    /*
-    private void getEpisodes(int seasonNumber) {
-
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_SEASON_DETAILS + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .addPathParameter("id", String.valueOf(Id))
-                .addPathParameter("number", String.valueOf(seasonNumber))
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            progressDialog.dismiss();
-                            List<TVShowEpisode> episodeList = new ArrayList<>();
-
-                            JSONArray jsonArray = response.getJSONArray("episodes");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                StreamService streamService = new StreamService(Id, seasonNumber, jsonObject.getInt("episode_number"));
-                                episodeList.add(new TVShowEpisode(jsonObject.getInt("episode_number"), jsonObject.getString("name"), streamService.getStreamUri()));
-                            }
-
-                            rvEpisodeList.setAdapter(new EpisodeAdapter(episodeList));
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(DetailTelevisionActivity.this,"Failed to display data!", Toast.LENGTH_SHORT).show();
-                        }
                     }
 
                     @Override
@@ -357,9 +274,50 @@ public class DetailTelevisionActivity extends AppCompatActivity {
                         Toast.makeText(DetailTelevisionActivity.this, "No internet connection!", Toast.LENGTH_SHORT).show();
                     }
                 });
-
     }
-    */
+
+    private void showRecommendations() {
+        recdAdapter = new RecommendationAdapter(this, recdTvshows, this, false);
+        rvRecd.setAdapter(recdAdapter);
+        recdAdapter.notifyDataSetChanged();
+    }
+
+    private void changeSeason(String seasonName){
+        for(int k = 0 ; k < modelTV.getSeasons().size() ; k++){
+            if(modelTV.getSeasons().get(k).getName().equals(seasonName)){
+                TVShowSeason selectedSeason = modelTV.getSeasons().get(k);
+
+                if(selectedSeason.getOverview().length() > 0) tvOverview.setText(selectedSeason.getOverview());
+                if(selectedSeason.getAirDate().length() > 0) tvRelease.setText(selectedSeason.getAirDate());
+                if(selectedSeason.getPosterPath().length() > 0 && !Objects.equals(selectedSeason.getPosterPath(), "null")){
+                    Glide.with(this)
+                            .load(selectedSeason.getPosterPath())
+                            .apply(new RequestOptions()
+                                    .placeholder(R.drawable.ic_image)
+                                    .transform(new RoundedCorners(16)))
+                            .into(imgPhoto);
+                }
+
+                loadStreamer(new StreamService(Id, selectedSeason.getSeasonNumber()));
+                getEpisodes(selectedSeason.getSeasonNumber(), selectedSeason.getEpisodeCount());
+                break;
+            }
+        }
+    }
+
+    private void loadStreamer(StreamService streamService){
+        webStreamer.loadData(streamService.generateStreamHTML(), "text/html", "UTF-8");
+    }
+
+    private void getEpisodes(int seasonNumber, int episodeCount){
+        List<TVShowEpisode> episodes = new ArrayList<>();
+        for (int i = 1; i <= episodeCount; i++) {
+            episodes.add(new TVShowEpisode(i, String.valueOf(i), Id, seasonNumber));
+        }
+
+        // Set the adapter on the ListView
+        rvEpisode.setAdapter(new EpisodeAdapter(episodes, webStreamer));
+    }
 
     public static void setWindowFlag(Activity activity, final int bits, boolean on) {
         Window window = activity.getWindow();
@@ -381,8 +339,15 @@ public class DetailTelevisionActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void openRecommended(RealmObject model) {
+        Intent intent = new Intent(this, DetailTelevisionActivity.class);
+        intent.putExtra("detailTV", (ModelTV) model);
+        startActivity(intent);
+    }
+
     public void openURL(View view) {
-        Uri uri = Uri.parse("https://vidsrc.to/embed/tv/" + this.Id + "/1/1");
+        Uri uri = Uri.parse("https://vidsrc.to/embed/tv/" + this.Id );
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }

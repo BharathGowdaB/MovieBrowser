@@ -1,0 +1,18 @@
+<resources>
+    <declare-styleable name="Toggle">
+        <attr name="viewId" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="TriSelector">
+        <attr name="InitialColor" format="color" />
+        <attr name="ActivatedColor" format="color" />
+        <attr name="SelectedColor" format="color" />
+        <attr name="Initial" format="color|reference" />
+        <attr name="Activated" format="color|reference" />
+        <attr name="Selected" format="color|reference" />
+    </declare-styleable>
+
+    <declare-styleable name="RadioSelector">
+        <attr name="checkedStateColor" format="color|reference" />
+    </declare-styleable>
+</resources>

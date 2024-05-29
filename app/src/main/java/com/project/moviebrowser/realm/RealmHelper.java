@@ -40,6 +40,7 @@ public class RealmHelper {
                 movie.setPosterPath(modelMovie.get(i).getPosterPath());
                 movie.setBackdropPath(modelMovie.get(i).getBackdropPath());
                 movie.setPopularity(modelMovie.get(i).getPopularity());
+                movie.setRating(modelMovie.get(i).getRating());
                 data.add(movie);
             }
         }
@@ -54,10 +55,10 @@ public class RealmHelper {
             for (int i = 0; i < modelTV.size(); i++) {
                 ModelTV tv = new ModelTV();
                 tv.setId(modelTV.get(i).getId());
-                tv.setName(modelTV.get(i).getName());
+                tv.setTitle(modelTV.get(i).getTitle());
                 tv.setVoteAverage(modelTV.get(i).getVoteAverage());
                 tv.setOverview(modelTV.get(i).getOverview());
-                tv.setReleaseDate(modelTV.get(i).getReleaseDate());
+                tv.setFirstAirDate(modelTV.get(i).getFirstAirDate());
                 tv.setPosterPath(modelTV.get(i).getPosterPath());
                 tv.setBackdropPath(modelTV.get(i).getBackdropPath());
                 tv.setPopularity(modelTV.get(i).getPopularity());
@@ -67,8 +68,17 @@ public class RealmHelper {
         return data;
     }
 
+    public void addFavoriteMovie(ModelMovie movie) {
+        if(isFavoriteMovie(movie.getId())){
+            return;
+        }
+
+        realm.beginTransaction();
+        realm.copyToRealm(movie);
+        realm.commitTransaction();
+    }
     public void addFavoriteMovie(int Id, String Title, double VoteAverage, String Overview,
-                            String ReleaseDate, String PosterPath, String BackdropPath, String Popularity) {
+                            String ReleaseDate, String PosterPath, String BackdropPath, String Popularity, float Rating) {
         if(isFavoriteMovie(Id)){
             return;
         }
@@ -81,11 +91,22 @@ public class RealmHelper {
         movie.setPosterPath(PosterPath);
         movie.setBackdropPath(BackdropPath);
         movie.setPopularity(Popularity);
+        movie.setRating(Rating);
 
         realm.beginTransaction();
         realm.copyToRealm(movie);
         realm.commitTransaction();
 
+    }
+
+    public void addFavoriteTV(ModelTV tvshow) {
+        if(isFavoriteTV(tvshow.getId())){
+            return;
+        }
+
+        realm.beginTransaction();
+        realm.copyToRealm(tvshow);
+        realm.commitTransaction();
     }
 
     public void addFavoriteTV(int Id, String Title, double VoteAverage, String Overview,
@@ -95,14 +116,14 @@ public class RealmHelper {
         }
         ModelTV tv = new ModelTV();
         tv.setId(Id);
-        tv.setName(Title);
+        tv.setTitle(Title);
         tv.setVoteAverage(VoteAverage);
         tv.setOverview(Overview);
-        tv.setReleaseDate(ReleaseDate);
+        tv.setFirstAirDate(ReleaseDate);
         tv.setPosterPath(PosterPath);
         tv.setBackdropPath(BackdropPath);
         tv.setPopularity(Popularity);
-        tv.setSeasons(seasons);
+        //tv.setSeasons(seasons);
 
         realm.beginTransaction();
         realm.copyToRealm(tv);

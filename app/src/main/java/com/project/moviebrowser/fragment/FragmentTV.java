@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RadioGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,24 +18,32 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.ANRequest;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.project.moviebrowser.R;
 import com.project.moviebrowser.activities.DetailTelevisionActivity;
 import com.project.moviebrowser.adapter.TvAdapter;
+import com.project.moviebrowser.configuration.Configuration;
+import com.project.moviebrowser.model.ModelMovie;
 import com.project.moviebrowser.model.ModelTV;
 import com.project.moviebrowser.model.TVShowSeason;
 import com.project.moviebrowser.networking.ApiEndpoint;
+import com.project.moviebrowser.networking.Certification;
+import com.project.moviebrowser.networking.VidSrc;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
 
@@ -41,8 +51,12 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
     private TvAdapter tvAdapter;
     private ProgressDialog progressDialog;
     private SearchView searchFilm;
-    private List<ModelTV> tvPopular = new ArrayList<>();
+    private List<ModelTV> tvList = new ArrayList<>();
 
+    private TextView titleView;
+    private RadioGroup filterOption;
+    private Button filterButton, loadMoreButton;
+    private String searchQuery = "";
     public FragmentTV() {}
 
     @Override
@@ -55,22 +69,40 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
         progressDialog.setCancelable(false);
         progressDialog.setCanceledOnTouchOutside(false);
 
-        TextView textView = rootView.findViewById(R.id.listTitle);
-        textView.setText("TV Shows Recommendations");
+        titleView = rootView.findViewById(R.id.listTitle);
+        titleView.setText("Popular Shows");
         searchFilm = rootView.findViewById(R.id.searchFilm);
         searchFilm.setQueryHint(getString(R.string.search_film));
         searchFilm.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                setSearchTv(query);
+                if(query.trim().compareTo(searchQuery) != 0){
+                    searchQuery = query.trim();
+                    Configuration.getInstance().resetNextPage();
+                    tvList = new ArrayList<>();
+                    getTvShow();
+                }
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.equals(""))
-                    getFilmTV();
+                if (newText.equals("") && newText.length() != searchQuery.length()){
+                    searchQuery = "";
+                }
                 return false;
+            }
+        });
+
+        filterOption = rootView.findViewById(R.id.filterOptions);
+        filterButton = rootView.findViewById(R.id.filter_button);
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rootView.findViewById(R.id.filterOptions).setVisibility(View.GONE);
+                Configuration.getInstance().resetNextPage();
+                tvList = new ArrayList<>();
+                getTvShow();
             }
         });
 
@@ -78,15 +110,50 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
         rvFilmRecommend.setLayoutManager(new LinearLayoutManager(getActivity()));
         rvFilmRecommend.setHasFixedSize(true);
 
-        getFilmTV();
+        loadMoreButton = rootView.findViewById(R.id.loadMore);
+
+        loadMoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getTvShow();
+            }
+        });
+
+        Configuration.getInstance().resetNextPage();
+        getTvShow();
 
         return rootView;
     }
 
-    private void setSearchTv(String query) {
+    private void getTvShow() {
         progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.SEARCH_TV
-                + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE + ApiEndpoint.QUERY + query)
+        String url = ApiEndpoint.MOVIEBROWSER_API + "tvshow/";
+
+        if (searchQuery.length() != 0) {
+            url += "search";
+        } else {
+            switch (filterOption.getCheckedRadioButtonId()){
+                case R.id.filter_latest:        url += "newly-added";
+                                                titleView.setText("Newly Added Shows");
+                                                break;
+                case R.id.filter_topRated:      url += "top-rated";
+                                                titleView.setText("Top Rated Showa");
+                                                break;
+                case R.id.filter_upcoming:      url += "upcoming";
+                                                titleView.setText("Upcoming Shows");
+                                                break;
+                case R.id.filter_popularity:    ;
+                default:                        url += "popular";
+                                                titleView.setText("Popular Shows");
+            }
+        }
+
+        AndroidNetworking.get(url)
+                .addQueryParameter("page", String.valueOf(Configuration.getInstance().getNextPage()))
+                .addQueryParameter("offset", String.valueOf(Configuration.getInstance().getNextOffset()))
+                .addQueryParameter("count", "12")
+                .addQueryParameter("certification", Certification.getCertification(Configuration.getInstance().getCertificationLevel()))
+                .addQueryParameter("query", searchQuery)
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
@@ -94,26 +161,22 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
                     public void onResponse(JSONObject response) {
                         try {
                             progressDialog.dismiss();
-                            tvPopular = new ArrayList<>();
                             JSONArray jsonArray = response.getJSONArray("results");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelTV dataApi = new ModelTV();
-                                SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-                                String datePost = jsonObject.getString("first_air_date");
-
-                                dataApi.setId(jsonObject.getInt("id"));
-                                dataApi.setName(jsonObject.getString("name"));
-                                dataApi.setVoteAverage(jsonObject.getDouble("vote_average"));
-                                dataApi.setOverview(jsonObject.getString("overview"));
-                                dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
-                                dataApi.setPosterPath(jsonObject.getString("poster_path"));
-                                dataApi.setBackdropPath(jsonObject.getString("backdrop_path"));
-                                dataApi.setPopularity(jsonObject.getString("popularity"));
-                                tvPopular.add(dataApi);
-                                showFilmTV();
+                            int startPosition = tvList.size();
+                            int count = jsonArray.length();
+                            if(count == 0){
+                                loadMoreButton.setVisibility(View.GONE);
+                            } else {
+                                loadMoreButton.setVisibility(View.VISIBLE);
+                                for (int i = 0; i < count; i++) {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                    ModelTV dataApi = ModelTV.createModel(jsonObject);
+                                    tvList.add(dataApi);
+                                }
                             }
+                            showTvShow(startPosition, count);
+                            Configuration.getInstance().setNextPage(response.getInt("nextPage"));
+                            Configuration.getInstance().setNextOffset(response.getInt("nextOffset"));
                         } catch (JSONException | ParseException e) {
                             e.printStackTrace();
                             Toast.makeText(getActivity(), "Failed to display data!", Toast.LENGTH_SHORT).show();
@@ -128,54 +191,10 @@ public class FragmentTV extends Fragment implements  TvAdapter.onSelectData{
                 });
     }
 
-    private void getFilmTV() {
-        progressDialog.show();
-        AndroidNetworking.get(ApiEndpoint.BASEURL + ApiEndpoint.TV_POPULAR + ApiEndpoint.APIKEY + ApiEndpoint.LANGUAGE)
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            progressDialog.dismiss();
-                            tvPopular = new ArrayList<>();
-                            JSONArray jsonArray = response.getJSONArray("results");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                ModelTV dataApi = new ModelTV();
-                                SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMMM yyyy");
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-                                String datePost = jsonObject.getString("first_air_date");
-
-                                dataApi.setId(jsonObject.getInt("id"));
-                                dataApi.setName(jsonObject.getString("name"));
-                                dataApi.setVoteAverage(jsonObject.getDouble("vote_average"));
-                                dataApi.setOverview(jsonObject.getString("overview"));
-                                if(datePost.length() > 0 && dateFormat.parse(datePost) != null) dataApi.setReleaseDate(formatter.format(dateFormat.parse(datePost)));
-                                dataApi.setPosterPath(jsonObject.getString("poster_path"));
-                                dataApi.setBackdropPath(jsonObject.getString("backdrop_path"));
-                                dataApi.setPopularity(jsonObject.getString("popularity"));
-                                tvPopular.add(dataApi);
-                                showFilmTV();
-                            }
-                        } catch (JSONException | ParseException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getActivity(), "Failed to display data!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
-                        progressDialog.dismiss();
-                        Toast.makeText(getActivity(), "No internet connection!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void showFilmTV() {
-        tvAdapter = new TvAdapter(getActivity(), tvPopular, this);
+    private void showTvShow(int startPosition, int count) {
+        tvAdapter = new TvAdapter(getActivity(), tvList, this);
         rvFilmRecommend.setAdapter(tvAdapter);
-        tvAdapter.notifyDataSetChanged();
+        tvAdapter.notifyItemRangeInserted(startPosition, count);
     }
 
     @Override

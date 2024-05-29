@@ -25,9 +25,11 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     private List<TVShowEpisode> episodes;
     private WebView webView;
 
+    private int selectedPosition;
     public EpisodeAdapter(List<TVShowEpisode> episodes, WebView webView) {
         this.episodes = episodes;
         this.webView = webView;
+        selectedPosition = 0;
     }
 
     @Override
@@ -40,11 +42,15 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         TVShowEpisode episode = episodes.get(position);
         holder.number.setText(String.valueOf(episode.getNumber()));
-
+        holder.itemView.setSelected(position == selectedPosition);
         holder.number.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                webView.loadData(episode.getStreamer().generateStreamHTML(), "text/html", "UTF-8");
+                StreamService streamer = new StreamService(episode.getShowId(), episode.getSeasonNumber(), episode.getNumber());
+                webView.loadData(streamer.generateStreamHTML(), "text/html", "UTF-8");
+                notifyItemChanged(selectedPosition);  // refresh previous selected item
+                selectedPosition = holder.getAdapterPosition();
+                notifyItemChanged(selectedPosition);
                 /*
                 if(StreamService.hasStreamableService(episode.getStreamer().getStreamUri().toString())){
                     Intent intent = new Intent(Intent.ACTION_VIEW, episode.getStreamer().getStreamUri());

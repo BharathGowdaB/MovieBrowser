@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:startColor="@color/colorPrimaryDark"
+                        android:centerX="0.9"
+                        android:centerY="0.9"
+                        android:centerColor="@color/colorPrimary"
+                        android:endColor="@color/colorPrimary"
+                        android:angle="45"
+                        android:type="linear" />
+
+                    <corners android:radius="3dp"></corners>
+
+                </shape>
+            </item>
+            <item android:width="100dp" android:height="40dp">
+                <vector xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:width="16dp"
+                    android:height="16dp"
+                    android:viewportWidth="1600"
+                    android:viewportHeight="640"
+                    android:shape="rectangle"
+                    >
+                    <group
+                        android:translateY="200"
+                        android:translateX="80"
+                        >
+                        <path
+                            android:fillColor="@color/pinkAccent"
+                            android:pathData="M 160.00226 137.38718 L 160.07197 137.45689 L 166.88899999999998 130.63986 L 183.15246 146.90332 C 183.93350999999998 147.68437 183.93350999999998 148.9507 183.15246 149.73175 L 166.88899999999998 165.99521000000001 L 166.81929 165.92550000000003 L 92.82712 239.91767000000004 L 92.15213 239.24268000000004 L 91.47713 239.91768000000005 L 6.624319999999997 155.06487000000004 L 6.6858299999999975 155.00336000000004 L 0.000009999999997845066 148.31754000000004 L 16.263469999999998 132.05408000000003 C 17.04452 131.27303000000003 18.31085 131.27303000000003 19.0919 132.05408000000003 L 35.35536 148.31754000000004 L 35.29385 148.37905000000003 L 92.15213 205.23733000000004 z M 79.6643 106.08234 L 104.6643 106.08234 L 104.6643 178.23847 L 79.6643 178.23847 z M 79.6643 79.39389 L 104.6643 79.39389 L 104.6643 102.18182999999999 L 79.6643 102.18182999999999 z M 79.6643 59.8482 L 104.6643 59.8482 L 104.6643 75.34088 L 79.6643 75.34088 z M 79.6643 45.61209 L 104.6643 45.61209 L 104.6643 56.83462 L 79.6643 56.83462 z M 79.6643 35.19542 L 104.6643 35.19542 L 104.6643 42.59035 L 79.6643 42.59035 z M 79.6643 26.51486 L 104.6643 26.51486 L 104.6643 31.999859999999998 L 79.6643 31.999859999999998 z M 79.6643 19.2232 L 104.6643 19.2232 L 104.6643 24.594939999999998 L 79.6643 24.594939999999998 z M 79.6643 13.32042 L 104.6643 13.32042 L 104.6643 16.52295 L 79.6643 16.52295 z M 79.6643 9.8482 L 104.6643 9.8482 L 104.6643 11.92604 L 79.6643 11.92604 z M 79.6643 6.37571 L 104.6643 6.37571 L 104.6643 8.45355 L 79.6643 8.45355 z M 79.6643 3.28273 L 104.6643 3.28273 L 104.6643 5.36057 L 79.6643 5.36057 z M 79.6643 0 L 104.6643 0 L 104.6643 2.07784 L 79.6643 2.07784 z"
+                            />
+                    </group>
+
+                </vector>
+            </item>
+        </layer-list>
+
+    </item>
+    <item android:state_activated="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:startColor="@color/colorPrimaryDark"
+                        android:centerX="0.9"
+                        android:centerY="0.9"
+                        android:centerColor="@color/colorPrimary"
+                        android:endColor="@color/colorPrimary"
+                        android:angle="45"
+                        android:type="linear" />
+
+                    <corners android:radius="3dp"></corners>
+                </shape>
+            </item>
+            <item android:width="100dp" android:height="40dp">
+                <vector xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:width="16dp"
+                    android:height="16dp"
+                    android:viewportWidth="1600"
+                    android:viewportHeight="640"
+                    android:shape="rectangle"
+                    >
+                    <group
+                        android:translateY="200"
+                        android:translateX="80"
+                        android:pivotX="100"
+                        android:pivotY="120"
+                        android:rotation="180">
+                        <path
+                            android:fillColor="@color/greenAccent"
+                            android:pathData="M 160.00226 137.38718 L 160.07197 137.45689 L 166.88899999999998 130.63986 L 183.15246 146.90332 C 183.93350999999998 147.68437 183.93350999999998 148.9507 183.15246 149.73175 L 166.88899999999998 165.99521000000001 L 166.81929 165.92550000000003 L 92.82712 239.91767000000004 L 92.15213 239.24268000000004 L 91.47713 239.91768000000005 L 6.624319999999997 155.06487000000004 L 6.6858299999999975 155.00336000000004 L 0.000009999999997845066 148.31754000000004 L 16.263469999999998 132.05408000000003 C 17.04452 131.27303000000003 18.31085 131.27303000000003 19.0919 132.05408000000003 L 35.35536 148.31754000000004 L 35.29385 148.37905000000003 L 92.15213 205.23733000000004 z M 79.6643 106.08234 L 104.6643 106.08234 L 104.6643 178.23847 L 79.6643 178.23847 z M 79.6643 79.39389 L 104.6643 79.39389 L 104.6643 102.18182999999999 L 79.6643 102.18182999999999 z M 79.6643 59.8482 L 104.6643 59.8482 L 104.6643 75.34088 L 79.6643 75.34088 z M 79.6643 45.61209 L 104.6643 45.61209 L 104.6643 56.83462 L 79.6643 56.83462 z M 79.6643 35.19542 L 104.6643 35.19542 L 104.6643 42.59035 L 79.6643 42.59035 z M 79.6643 26.51486 L 104.6643 26.51486 L 104.6643 31.999859999999998 L 79.6643 31.999859999999998 z M 79.6643 19.2232 L 104.6643 19.2232 L 104.6643 24.594939999999998 L 79.6643 24.594939999999998 z M 79.6643 13.32042 L 104.6643 13.32042 L 104.6643 16.52295 L 79.6643 16.52295 z M 79.6643 9.8482 L 104.6643 9.8482 L 104.6643 11.92604 L 79.6643 11.92604 z M 79.6643 6.37571 L 104.6643 6.37571 L 104.6643 8.45355 L 79.6643 8.45355 z M 79.6643 3.28273 L 104.6643 3.28273 L 104.6643 5.36057 L 79.6643 5.36057 z M 79.6643 0 L 104.6643 0 L 104.6643 2.07784 L 79.6643 2.07784 z"
+                            />
+                    </group>
+
+                </vector>
+            </item>
+        </layer-list>
+
+    </item>
+
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:startColor="@color/colorPrimary"
+                        android:centerX="0.9"
+                        android:centerY="0.9"
+                        android:centerColor="@color/colorPrimaryDark"
+                        android:endColor="@color/colorPrimaryDark"
+                        android:angle="45"
+                        android:type="linear" />
+                    <corners android:radius="3dp"></corners>
+                </shape>
+            </item>
+            <item android:width="100dp" android:height="40dp">
+                <vector xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:width="16dp"
+                    android:height="16dp"
+                    android:viewportWidth="1600"
+                    android:viewportHeight="640"
+                    android:shape="rectangle"
+                    >
+                    <group
+                        android:translateY="200"
+                        android:translateX="80"
+                        android:pivotX="100"
+                        android:pivotY="120"
+                        android:rotation="180">
+                        <path
+                            android:fillColor="@color/black"
+                            android:fillAlpha="0.2"
+                            android:pathData="M 160.00226 137.38718 L 160.07197 137.45689 L 166.88899999999998 130.63986 L 183.15246 146.90332 C 183.93350999999998 147.68437 183.93350999999998 148.9507 183.15246 149.73175 L 166.88899999999998 165.99521000000001 L 166.81929 165.92550000000003 L 92.82712 239.91767000000004 L 92.15213 239.24268000000004 L 91.47713 239.91768000000005 L 6.624319999999997 155.06487000000004 L 6.6858299999999975 155.00336000000004 L 0.000009999999997845066 148.31754000000004 L 16.263469999999998 132.05408000000003 C 17.04452 131.27303000000003 18.31085 131.27303000000003 19.0919 132.05408000000003 L 35.35536 148.31754000000004 L 35.29385 148.37905000000003 L 92.15213 205.23733000000004 z M 79.6643 106.08234 L 104.6643 106.08234 L 104.6643 178.23847 L 79.6643 178.23847 z M 79.6643 79.39389 L 104.6643 79.39389 L 104.6643 102.18182999999999 L 79.6643 102.18182999999999 z M 79.6643 59.8482 L 104.6643 59.8482 L 104.6643 75.34088 L 79.6643 75.34088 z M 79.6643 45.61209 L 104.6643 45.61209 L 104.6643 56.83462 L 79.6643 56.83462 z M 79.6643 35.19542 L 104.6643 35.19542 L 104.6643 42.59035 L 79.6643 42.59035 z M 79.6643 26.51486 L 104.6643 26.51486 L 104.6643 31.999859999999998 L 79.6643 31.999859999999998 z M 79.6643 19.2232 L 104.6643 19.2232 L 104.6643 24.594939999999998 L 79.6643 24.594939999999998 z M 79.6643 13.32042 L 104.6643 13.32042 L 104.6643 16.52295 L 79.6643 16.52295 z M 79.6643 9.8482 L 104.6643 9.8482 L 104.6643 11.92604 L 79.6643 11.92604 z M 79.6643 6.37571 L 104.6643 6.37571 L 104.6643 8.45355 L 79.6643 8.45355 z M 79.6643 3.28273 L 104.6643 3.28273 L 104.6643 5.36057 L 79.6643 5.36057 z M 79.6643 0 L 104.6643 0 L 104.6643 2.07784 L 79.6643 2.07784 z"
+                            />
+                    </group>
+
+                </vector>
+            </item>
+        </layer-list>
+
+    </item>
+</selector>

@@ -3,20 +3,22 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="@drawable/bg_episode"
     android:layout_margin="4dp"
     android:layout_gravity="center"
    >
 
-    <TextView
+    <Button
         android:id="@+id/episode_number"
         android:layout_width="52dp"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:padding="8dp"
         android:textSize="16sp"
         android:textColor="@android:color/white"
+        android:background="@drawable/bg_rounded_dark"
         android:gravity="center"
-        android:text="01"/>
+        android:text="01"
+        android:focusable="true"
+        />
 
 <!--    <TextView-->
 <!--        android:id="@+id/episode_name"-->
@@ -31,3 +33,5 @@
 
 <!--        />-->
 </LinearLayout>
+
+

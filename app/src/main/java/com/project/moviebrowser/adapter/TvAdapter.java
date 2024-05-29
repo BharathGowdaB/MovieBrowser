@@ -9,6 +9,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
@@ -46,18 +47,21 @@ public class TvAdapter extends RecyclerView.Adapter<TvAdapter.ViewHolder> {
     public void onBindViewHolder(TvAdapter.ViewHolder holder, int position) {
         final ModelTV data = items.get(position);
 
-        Rating = data.getVoteAverage();
-        holder.tvTitle.setText(data.getName());
-        holder.tvRealeseDate.setText(data.getReleaseDate());
+        holder.tvTitle.setText(data.getTitle());
+        holder.tvReleaseDate.setText(data.getFirstAirDate());
         holder.tvDesc.setText(data.getOverview());
 
-        float newValue = (float)Rating;
+        if(data.getStreamLastEpisode()){
+            holder.playButton.setBackground(ContextCompat.getDrawable(mContext, R.mipmap.ic_play_stream_round));
+        } else if(data.getStreamFirstEpisode()){
+            holder.playButton.setBackground(ContextCompat.getDrawable(mContext, R.mipmap.ic_play_trailer_round));
+        }
         holder.ratingBar.setNumStars(5);
         holder.ratingBar.setStepSize((float) 0.5);
-        holder.ratingBar.setRating(newValue / 2);
+        holder.ratingBar.setRating(data.getRating());
 
         Glide.with(mContext)
-                .load(ApiEndpoint.URLIMAGE + data.getPosterPath())
+                .load(data.getPosterPath())
                 .apply(new RequestOptions()
                         .placeholder(R.drawable.ic_image)
                         .transform(new RoundedCorners(16)))
@@ -82,18 +86,20 @@ public class TvAdapter extends RecyclerView.Adapter<TvAdapter.ViewHolder> {
         public CardView cvFilm;
         public ImageView imgPhoto;
         public TextView tvTitle;
-        public TextView tvRealeseDate;
+        public TextView tvReleaseDate;
         public TextView tvDesc;
         public RatingBar ratingBar;
+        public ImageView playButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
             cvFilm = itemView.findViewById(R.id.cvFilm);
             imgPhoto = itemView.findViewById(R.id.imgPhoto);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-            tvRealeseDate = itemView.findViewById(R.id.tvRealeseDate);
-            tvDesc = itemView.findViewById(R.id.tvDesc);
+            tvTitle = itemView.findViewById(R.id.title);
+            tvReleaseDate = itemView.findViewById(R.id.releaseDate);
+            tvDesc = itemView.findViewById(R.id.description);
             ratingBar = itemView.findViewById(R.id.ratingBar);
+            playButton = itemView.findViewById(R.id.playButton);
         }
     }
 }

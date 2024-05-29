@@ -5,61 +5,207 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="10dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="5dp"
-            android:text="Now Airing &#x1F60D;"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+        android:layout_gravity="center_horizontal">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_search"
-            android:orientation="horizontal">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
 
-            <SearchView
-                android:id="@+id/searchFilm"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:text="Now Airing &#x1F60D;"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+             <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+                        <SearchView
+                            android:id="@+id/searchFilm"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:iconifiedByDefault="false"
+                            android:paddingStart="-10dp"
+                            android:background="@drawable/bg_search"
+                            android:searchIcon="@drawable/ic_search"
+                            android:theme="@style/SearchView"
+                            app:queryBackground="@android:color/transparent" />
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        >
+
+                        <com.project.moviebrowser.view.Toggle
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginHorizontal="12dp"
+                            android:layout_gravity="center"
+                            android:layout_centerVertical="true"
+                            android:button="@drawable/ic_filter"
+                            app:viewId="@+id/filterOptions"
+                            >
+                        </com.project.moviebrowser.view.Toggle>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            <TextView
+                android:id="@+id/listTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:text="Movie Recommendations"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFilmRecommend"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:listitem="@layout/list_item_film"
+                />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:iconifiedByDefault="false"
-                android:paddingStart="-10dp"
-                android:searchIcon="@drawable/ic_search"
-                android:theme="@style/SearchView"
-                app:queryBackground="@android:color/transparent" />
+                android:gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="70dp">
+                <Button
+                    android:id="@+id/loadMore"
+                    android:layout_width="140dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_rounded"
+                    android:text="More"
+                    android:textColor="@android:color/white"
+                    >
+
+                </Button>
+            </LinearLayout>
+
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/listTitle"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|center"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp"
-            android:text="Movie Recommendations"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="100dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="10dp"
+            >
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvFilmRecommend"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/list_item_film"
-            android:layout_marginBottom="60dp"/>
+            <RadioGroup
+                android:id="@+id/filterOptions"
+                android:layout_width="250dp"
+                android:layout_height="160dp"
+                android:background="@color/colorPrimaryDark"
+                android:padding="10dp"
+                android:visibility="gone"
+                >
 
-    </LinearLayout>
+                <com.project.moviebrowser.view.RadioSelector
+                    android:id="@+id/filter_latest"
+                    android:text="Latest"
+                    android:layout_width="110dp"
+                    android:layout_height="40dp"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/white"
+                    app:checkedStateColor="@color/greenAccent"
+                    android:background="@drawable/bg_filter_option"
+                    android:button="@color/transparent"
+                    >
+                </com.project.moviebrowser.view.RadioSelector>
+
+                <com.project.moviebrowser.view.RadioSelector
+                    android:id="@+id/filter_topRated"
+                    android:text="Top Rated"
+                    android:layout_width="110dp"
+                    android:layout_height="40dp"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/white"
+                    app:checkedStateColor="@color/greenAccent"
+                    android:background="@drawable/bg_filter_option"
+                    android:button="@color/transparent"
+                    android:layout_marginTop="-40dp"
+                    android:layout_marginLeft="120dp"
+                    >
+
+                </com.project.moviebrowser.view.RadioSelector>
+
+                <com.project.moviebrowser.view.RadioSelector
+                    android:id="@+id/filter_popularity"
+                    android:text="Popularity"
+                    android:layout_width="110dp"
+                    android:layout_height="40dp"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/white"
+                    app:checkedStateColor="@color/greenAccent"
+                    android:background="@drawable/bg_filter_option"
+                    android:button="@color/transparent"
+                    android:layout_marginTop="10dp"
+                    android:checked="true"
+                    >
+                </com.project.moviebrowser.view.RadioSelector>
+
+                <com.project.moviebrowser.view.RadioSelector
+                    android:id="@+id/filter_upcoming"
+                    android:text="Upcoming"
+                    android:layout_width="110dp"
+                    android:layout_height="40dp"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/white"
+                    app:checkedStateColor="@color/greenAccent"
+                    android:background="@drawable/bg_filter_option"
+                    android:button="@color/transparent"
+                    android:layout_marginTop="-40dp"
+                    android:layout_marginLeft="120dp"
+                    >
+                </com.project.moviebrowser.view.RadioSelector>
+                <Button
+                    android:id="@+id/filter_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="Filter"
+                    android:textColor="@android:color/white"
+                    android:background="@color/purpleAccent"
+                    android:layout_marginTop="10dp"
+                    >
+                </Button>
+
+            </RadioGroup>
+
+
+
+        </RelativeLayout>
+    </RelativeLayout>
 
 </androidx.core.widget.NestedScrollView>

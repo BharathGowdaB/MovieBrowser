@@ -4,16 +4,21 @@ import android.net.Uri;
 
 import com.project.moviebrowser.services.StreamService;
 
-public class TVShowEpisode {
+import java.io.Serializable;
+
+import io.realm.RealmObject;
+
+public class TVShowEpisode extends RealmObject implements Serializable {
     private int Number;
+    private int ShowId;
+    private int SeasonNumber;
     private String Name;
-
-    private StreamService Streamer;
-
-    public TVShowEpisode(int number, String name, StreamService service){
+    public TVShowEpisode(){}
+    public TVShowEpisode(int number, String name, int showId, int seasonNumber){
         Number = number;
         Name = name;
-        Streamer = service;
+        ShowId = showId;
+        SeasonNumber = seasonNumber;
     }
 
     public int getNumber() {
@@ -23,7 +28,16 @@ public class TVShowEpisode {
     public String getName() {
         return Name;
     }
-    public StreamService getStreamer() {
-        return Streamer;
+
+    public int getShowId() {
+        return ShowId;
     }
+    public int getSeasonNumber() {
+        return SeasonNumber;
+    }
+
+    public void setSeasonNumber(int seasonNumber) {
+        SeasonNumber = seasonNumber;
+    }
+
 }

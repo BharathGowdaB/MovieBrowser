@@ -1,39 +1,14 @@
 package com.project.moviebrowser.networking;
 
+import com.project.moviebrowser.configuration.Configuration;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class ApiEndpoint {
-
-    public static String BASEURL = "http://api.themoviedb.org/3/";
-    public static String APIKEY = "api_key=c7bbab9fe9f49e2b47a570c1b6c591fb";
-    public static String LANGUAGE = "&language=en-US";
-    public static String SEARCH_MOVIE = "search/movie?";
-    public static String SEARCH_TV = "search/tv?";
-    public static String QUERY = "&query=";
-    public static String MOVIE_POPULAR = "discover/movie?";
-    public static String TV_POPULAR = "discover/tv?";
-    public static String URLIMAGE = "https://image.tmdb.org/t/p/w780/";
-    public static String URLFILM = "https://www.themoviedb.org/movie/";
-    public static String MOVIE_VIDEO = "movie/{id}/videos?";
-    public static String TV_VIDEO = "tv/{id}/videos?";
-
-    public static String MOVIE_DETAIL = "movie/{id}?";
-    public static String TV_DETAILS = "tv/{id}?";
-
-    public static String TV_SEASON_DETAILS = "tv/{id}/season/{number}?";
-
-    public static String STREAMER_BASEURL = "https://vidsrc.to/embed/";
-    public static String getStreamMovieAPI(int id) {
-        return STREAMER_BASEURL + "movie/" + id;
-    }
-    public static String getStreamTvAPI(int id){
-        return getStreamTvAPI(id, 1, 1);
-    }
-
-    public static String getStreamTvAPI(int id, int season){
-        return getStreamTvAPI(id, season, 1);
-
-    }
-
-    public static String getStreamTvAPI(int id, int season, int episode){
-        return STREAMER_BASEURL + "tv/" + id + "/" + season + "/" + episode;
-    }
+    public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    public static String MOVIEBROWSER_API = "https://82bm2uomlg.execute-api.ap-south-1.amazonaws.com/";
+    public static String URL_MOVIE = "https://www.themoviedb.org/movie/";
+    public static String URL_TVSHOW = "https://www.themoviedb.org/tv/";
 }

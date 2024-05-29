@@ -1,4 +1,4 @@
-package com.project.moviebrowser.services;
+package com.project.moviebrowser.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

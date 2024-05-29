@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:id="@+id/mainActivityUI">
 
     <com.github.florent37.diagonallayout.DiagonalLayout
         android:id="@+id/diagonalLayout"
@@ -58,7 +59,9 @@
                 app:bt_shape="@drawable/tab_movie_color"
                 app:bt_title="Movie"
                 app:bt_titlePadding="5dp"
-                app:bt_titleSize="10sp" />
+                app:bt_titleSize="10sp"
+                android:focusable="true"
+                android:nextFocusRight="@id/tabTV"/>
 
             <com.gauravk.bubblenavigation.BubbleToggleView
                 android:id="@+id/tabTV"
@@ -71,7 +74,9 @@
                 app:bt_shape="@drawable/tab_tv_color"
                 app:bt_title="Tv Show"
                 app:bt_titlePadding="5dp"
-                app:bt_titleSize="10sp" />
+                app:bt_titleSize="10sp"
+                android:nextFocusRight="@id/tabFav"
+                android:nextFocusLeft="@id/tabFilm"/>
 
             <com.gauravk.bubblenavigation.BubbleToggleView
                 android:id="@+id/tabFav"
@@ -84,7 +89,8 @@
                 app:bt_shape="@drawable/tab_fav_color"
                 app:bt_title="Favorite"
                 app:bt_titlePadding="5dp"
-                app:bt_titleSize="10sp" />
+                app:bt_titleSize="10sp"
+                android:nextFocusLeft="@id/tabTV"/>
 
         </com.gauravk.bubblenavigation.BubbleNavigationLinearView>
 
